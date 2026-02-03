@@ -42,6 +42,7 @@ if (DB_MODE === 'cloud') {
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS meals (id TEXT PRIMARY KEY, entry_id TEXT, type TEXT, content TEXT)`);
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS habits (id TEXT PRIMARY KEY, entry_id TEXT, habit_name TEXT, completed INTEGER)`);
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS goals (user_id TEXT PRIMARY KEY, start_weight REAL, target_weight REAL, start_date TEXT)`);
+        sqliteDb.run(`CREATE TABLE IF NOT EXISTS otps (phone TEXT PRIMARY KEY, code TEXT, expires_at INTEGER)`);
     });
 }
 
@@ -72,6 +73,21 @@ const db = {
         } else {
             return new Promise((resolve, reject) => {
                 sqliteDb.get(`SELECT * FROM users WHERE email = ?`, [email], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                });
+            });
+        }
+    },
+
+    async getUserByPhone(phone) {
+        if (DB_MODE === 'cloud') {
+            const { data, error } = await supabase.from('users').select('*').eq('phone', phone).single();
+            if (error && error.code !== 'PGRST116') throw error;
+            return data;
+        } else {
+            return new Promise((resolve, reject) => {
+                sqliteDb.get(`SELECT * FROM users WHERE phone = ?`, [phone], (err, row) => {
                     if (err) reject(err);
                     else resolve(row);
                 });
@@ -244,7 +260,43 @@ const db = {
                 });
             });
         }
+    },
+
+    // --- OTPs ---
+    async saveOTP(phone, code) {
+        const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+        if (DB_MODE === 'cloud') {
+            const { error } = await supabase.from('otps').upsert({ phone, code, expires_at: expiresAt });
+            if (error) throw error;
+        } else {
+            return new Promise((resolve, reject) => {
+                sqliteDb.run(`INSERT OR REPLACE INTO otps (phone, code, expires_at) VALUES (?, ?, ?)`, [phone, code, expiresAt], (err) => {
+                    if (err) reject(err);
+                    else resolve(true);
+                });
+            });
+        }
+    },
+
+    async verifyOTP(phone, code) {
+        const now = Date.now();
+        if (DB_MODE === 'cloud') {
+            const { data, error } = await supabase.from('otps').select('*').eq('phone', phone).single();
+            if (error || !data) return false;
+            if (data.code !== code || data.expires_at < now) return false;
+            await supabase.from('otps').delete().eq('phone', phone);
+            return true;
+        } else {
+            return new Promise((resolve, reject) => {
+                sqliteDb.get(`SELECT * FROM otps WHERE phone = ?`, [phone], (err, row) => {
+                    if (err || !row) return resolve(false);
+                    if (row.code !== code || row.expires_at < now) return resolve(false);
+                    sqliteDb.run(`DELETE FROM otps WHERE phone = ?`, [phone], () => resolve(true));
+                });
+            });
+        }
     }
 };
 
 export default db;
+

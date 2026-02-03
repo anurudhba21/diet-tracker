@@ -66,6 +66,61 @@ app.put('/api/users/:id', async (req, res) => {
     }
 });
 
+// --- OTP Routes ---
+
+import twilio from 'twilio';
+
+app.post('/api/auth/otp/request', async (req, res) => {
+    const { phone } = req.body;
+    try {
+        const user = await db.getUserByPhone(phone);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found with this phone number' });
+        }
+
+        // Generate 6 digit code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        await db.saveOTP(phone, code);
+
+        // Send SMS via Twilio if configured
+        if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+            try {
+                const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+                await client.messages.create({
+                    body: `Your Diet Tracker OTP is: ${code}`,
+                    from: process.env.TWILIO_PHONE_NUMBER,
+                    to: phone.startsWith('+') ? phone : `+91${phone}`
+                });
+                console.log(`📨 Sent SMS to ${phone}`);
+            } catch (smsError) {
+                console.error('Twilio Error:', smsError.message);
+                console.log(`🔐 OTP for ${phone}: ${code} (Fallback)`);
+            }
+        } else {
+            console.log(`🔐 OTP for ${phone}: ${code} (Mock)`);
+        }
+
+        res.json({ success: true, message: 'OTP sent' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/auth/otp/verify', async (req, res) => {
+    const { phone, code } = req.body;
+    try {
+        const isValid = await db.verifyOTP(phone, code);
+        if (!isValid) {
+            return res.status(400).json({ error: 'Invalid or expired OTP' });
+        }
+
+        const user = await db.getUserByPhone(phone);
+        res.json({ user: { id: user.id, email: user.email, name: user.name, phone: user.phone, height_cm: user.height_cm, dob: user.dob, gender: user.gender, avatar_id: user.avatar_id } });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- Data Routes ---
 
 app.get('/api/entries', async (req, res) => {

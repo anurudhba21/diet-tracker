@@ -59,6 +59,17 @@ export function AuthProvider({ children }) {
         window.location.href = '/login';
     };
 
+    const requestOTP = async (phone) => {
+        return await api.requestOTP(phone);
+    };
+
+    const loginWithPhone = async (phone, code) => {
+        const user = await api.verifyOTP(phone, code);
+        setUser(user);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+        return user;
+    };
+
     if (loading) {
         return (
             <div style={{
@@ -77,7 +88,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, register, updateProfile, logout }}>
+        <AuthContext.Provider value={{ user, login, register, updateProfile, logout, requestOTP, loginWithPhone }}>
             {children}
         </AuthContext.Provider>
     );

@@ -58,6 +58,33 @@ export const api = {
         return data.user;
     },
 
+    // OTP
+    requestOTP: async (phone) => {
+        const response = await fetch(`${API_URL}/auth/otp/request`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone })
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error);
+        }
+        return await response.json();
+    },
+
+    verifyOTP: async (phone, code) => {
+        const response = await fetch(`${API_URL}/auth/otp/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, code })
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error);
+        }
+        return await response.json().then(data => data.user);
+    },
+
     // Entries
     getEntries: async (userId) => {
         const response = await fetch(`${API_URL}/entries?userId=${userId}`);

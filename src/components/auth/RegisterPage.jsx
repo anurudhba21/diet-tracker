@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Mail, Lock, UserPlus, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, UserPlus, ArrowRight, Loader2, Phone } from 'lucide-react';
 
 export default function RegisterPage({ onNavigateLogin }) {
     const { register } = useAuth();
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
@@ -31,7 +32,7 @@ export default function RegisterPage({ onNavigateLogin }) {
         }
 
         try {
-            await register({ email, password });
+            await register({ email, phone, password });
             // Success! Navigate to Onboarding (Profile)
             navigate('/profile');
         } catch (err) {
