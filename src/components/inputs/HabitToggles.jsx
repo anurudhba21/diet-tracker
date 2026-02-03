@@ -1,5 +1,4 @@
 const HABITS = [
-    { id: 'junk_flag', label: 'Ate Junk Food?' },
     { id: 'buttermilk_flag', label: 'Drank Buttermilk?' },
     { id: 'omega3_flag', label: 'Took Omega-3?' }
 ];

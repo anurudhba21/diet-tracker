@@ -1,21 +1,35 @@
 import { useAuth } from '../../context/AuthContext';
-import { storage } from '../../utils/storage';
+import { api } from '../../utils/api';
 import { exportService } from '../../utils/exportService';
 
 export default function ExportButton() {
     const { user } = useAuth();
-    const handleExport = () => {
-        if (!user) return;
-        const entries = storage.getEntries(user.id);
-        const goal = storage.getGoal(user.id);
 
-        if (Object.keys(entries).length === 0) {
-            alert("No data to export yet!");
-            return;
-        }
+    const handleExport = async () => {
+        if (!user) return;
 
         try {
-            exportService.generateExcel(entries, goal);
+            const entriesArr = await api.getEntries(user.id);
+            const goal = await api.getGoal(user.id);
+
+            if (!entriesArr || entriesArr.length === 0) {
+                alert("No data to export yet!");
+                return;
+            }
+
+            // Convert array to map and flatten for export service compatibility
+            const entriesMap = {};
+            entriesArr.forEach(e => {
+                entriesMap[e.date] = {
+                    ...e,
+                    ...e.meals,
+                    junk_flag: e.habits?.['Junk Food'],
+                    buttermilk_flag: e.habits?.['Buttermilk'],
+                    omega3_flag: e.habits?.['Omega-3']
+                };
+            });
+
+            exportService.generateExcel(entriesMap, goal);
         } catch (e) {
             console.error(e);
             alert("Failed to export data. See console for details.");

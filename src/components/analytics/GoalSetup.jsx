@@ -1,21 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { storage } from '../../utils/storage';
 
 export default function GoalSetup({ onSave }) {
     const { user } = useAuth();
     const [startWeight, setStartWeight] = useState('');
     const [targetWeight, setTargetWeight] = useState('');
-
-    useEffect(() => {
-        if (user) {
-            const existing = storage.getGoal(user.id);
-            if (existing) {
-                setStartWeight(existing.startWeight);
-                setTargetWeight(existing.targetWeight);
-            }
-        }
-    }, [user]);
 
     const handleSave = () => {
         if (!startWeight || !targetWeight) {
@@ -27,10 +16,8 @@ export default function GoalSetup({ onSave }) {
             targetWeight: parseFloat(targetWeight),
             updatedAt: new Date().toISOString()
         };
-        if (user) {
-            storage.saveGoal(goalData, user.id);
-            onSave(goalData); // Notify parent
-        }
+        // Bubble up to parent (Dashboard) which calls API
+        onSave(goalData);
     };
 
     return (
@@ -60,7 +47,7 @@ export default function GoalSetup({ onSave }) {
             </div>
 
             <button className="btn" onClick={handleSave}>
-                Update Goal
+                Save Goal
             </button>
         </div>
     );

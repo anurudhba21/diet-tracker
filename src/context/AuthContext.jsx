@@ -1,5 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../utils/auth';
+import { api } from '../utils/api';
+// We still use localstorage for SESSION token/user persistence on client side for now 
+// but auth actions go to server.
+// Actually, let's keep a simple session mechanism in localStorage to persist login state across reloads.
+const SESSION_KEY = 'diet_tracker_current_session';
 
 const AuthContext = createContext(null);
 
@@ -8,42 +12,72 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const sessionUser = authService.getSession();
-        if (sessionUser) {
-            setUser(sessionUser);
-        }
-        setLoading(false);
+        const initSession = async () => {
+            try {
+                const stored = localStorage.getItem(SESSION_KEY);
+                if (stored) {
+                    try {
+                        setUser(JSON.parse(stored));
+                    } catch {
+                        localStorage.removeItem(SESSION_KEY);
+                    }
+                }
+            } catch (error) {
+                console.error("Auth initialization error:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        initSession();
     }, []);
 
     const login = async (email, password) => {
-        const user = await authService.login(email, password);
-        setUser({ id: user.id, email: user.email });
+        const user = await api.login(email, password);
+        setUser(user);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
         return user;
     };
 
-    const register = async (email, password) => {
-        const user = await authService.register(email, password);
-        setUser({ id: user.id, email: user.email });
+    const register = async (userData) => {
+        const user = await api.register(userData);
+        setUser(user);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
         return user;
     };
 
-    const updateProfile = (updates) => {
+    const updateProfile = async (updates) => {
         if (!user) return;
-        const updatedUser = authService.updateUser(user.id, updates);
+        const updatedUser = await api.updateUser(user.id, updates);
         setUser(updatedUser);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(updatedUser));
+        return updatedUser;
     };
 
     const logout = () => {
-        authService.logout();
         setUser(null);
+        localStorage.removeItem(SESSION_KEY);
+        window.location.href = '/login';
     };
 
     if (loading) {
-        return <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>Loading...</div>;
+        return (
+            <div style={{
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                gap: '1rem',
+                color: '#10b981'
+            }}>
+                <div className="ambient-orb orb-1" style={{ width: '20vh', height: '20vh', left: 'calc(50% - 10vh)', top: 'calc(50% - 10vh)' }}></div>
+                <div style={{ zIndex: 1, fontWeight: 500 }}>Loading diet tracker...</div>
+            </div>
+        );
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, updateProfile }}>
+        <AuthContext.Provider value={{ user, login, register, updateProfile, logout }}>
             {children}
         </AuthContext.Provider>
     );

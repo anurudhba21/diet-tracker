@@ -1,127 +1,112 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { storage } from './utils/storage'
+import { ThemeProvider } from './context/ThemeContext'
 import Layout from './components/Layout'
 import DailyEntry from './components/DailyEntry'
 import History from './components/History'
 import AnalyticsDashboard from './components/analytics/AnalyticsDashboard'
 import LoginPage from './components/auth/LoginPage'
 import RegisterPage from './components/auth/RegisterPage'
-import ErrorBoundary from './components/ErrorBoundary'
+import OnboardingPage from './components/auth/OnboardingPage'
+import NavButton from './components/NavButton'
+import PageTransition from './components/PageTransition'
+import { Book, LayoutDashboard, PlusCircle } from 'lucide-react'
 
-import { Calendar, History as HistoryIcon, BarChart2, Edit2, LogOut } from 'lucide-react';
+// Wrapper to ensure we have a user (which AuthContext guarantees after loading)
+function RequireUser({ children }) {
+    const { user, loading } = useAuth();
+    const location = useLocation();
 
-function AuthenticatedApp() {
-    const { user, logout } = useAuth();
-    const [view, setView] = useState('today');
-    const [targetDate, setTargetDate] = useState(new Date().toDateString());
+    if (loading) return null; // Or a spinner
 
-    useEffect(() => {
-        if (user) {
-            storage.migrateLegacyData(user.id);
-        }
-    }, [user]);
+    // Allow access to public paths without user
+    if (location.pathname === '/login' || location.pathname === '/register') {
+        return children;
+    }
 
-    useEffect(() => {
-        const handleEntryDeleted = () => setView('history');
-        window.addEventListener('entry-deleted', handleEntryDeleted);
-        return () => window.removeEventListener('entry-deleted', handleEntryDeleted);
-    }, []);
+    if (!user) {
+        // Redirect to login, but save the location they were trying to go to
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
 
-    const goHome = () => { setView('today'); setTargetDate(new Date().toDateString()); };
-    const goHistory = () => setView('history');
-    const goAnalytics = () => setView('analytics');
-    const handleEdit = (date) => { setTargetDate(date); setView('edit'); };
+    // New: Check if onboarding is complete
+    const isOnboardingComplete = user.name && user.height_cm;
+    if (!isOnboardingComplete && location.pathname !== '/profile') {
+        // Force onboarding if profile is incomplete
+        // We redirect to /profile (which uses OnboardingPage)
+        return <Navigate to="/profile" replace />;
+    }
 
-    return (
-        <Layout>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-                <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-                    {view === 'today' ? 'Daily Tracker' : view === 'history' ? 'History' : 'Stats & Goals'}
-                </h1>
-                <button onClick={logout} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
-                    <LogOut size={20} />
-                </button>
-            </div>
-
-            {/* Content Area with Animation Wrapper (Handled inside components or here) */}
-            <div style={{ paddingBottom: '80px' }}> {/* Space for bottom nav */}
-                {view === 'history' ? <History key="hi" onSelectDate={handleEdit} /> :
-                    view === 'analytics' ? <AnalyticsDashboard key="an" /> :
-                        <DailyEntry key={targetDate} date={targetDate} />}
-            </div>
-
-            {/* Bottom Navigation Bar */}
-            <div style={{
-                position: 'fixed',
-                bottom: 20,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '90%',
-                maxWidth: '400px',
-                background: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(12px)',
-                borderRadius: '2rem',
-                border: '1px solid rgba(255,255,255,0.5)',
-                display: 'flex',
-                justifyContent: 'space-around',
-                padding: '0.75rem',
-                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
-                zIndex: 100
-            }}>
-                <NavButton active={view === 'today'} onClick={goHome} icon={<Edit2 size={24} />} label="Today" />
-                <NavButton active={view === 'history'} onClick={goHistory} icon={<HistoryIcon size={24} />} label="History" />
-                <NavButton active={view === 'analytics'} onClick={goAnalytics} icon={<BarChart2 size={24} />} label="Stats" />
-            </div>
-        </Layout>
-    );
-}
-
-// Internal component for cleaner code
-function NavButton({ active, onClick, icon, label }) {
-    return (
-        <button
-            onClick={onClick}
-            style={{
-                background: active ? 'var(--color-primary)' : 'transparent',
-                color: active ? 'white' : 'var(--color-text-muted)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '50px',
-                height: '50px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-        >
-            {icon}
-        </button>
-    );
+    return children;
 }
 
 function AppContent() {
-    const { user } = useAuth();
-    const [authView, setAuthView] = useState('login'); // 'login' | 'register'
+    const location = useLocation();
 
-    if (user) return <AuthenticatedApp />;
-
-    if (authView === 'register') {
-        return <RegisterPage onNavigateLogin={() => setAuthView('login')} />;
-    }
-    return <LoginPage onNavigateRegister={() => setAuthView('register')} />;
-}
-
-function App() {
     return (
-        <ErrorBoundary>
-            <AuthProvider>
-                <AppContent />
-            </AuthProvider>
-        </ErrorBoundary>
-    );
+        <RequireUser>
+            <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                    <Route
+                        path="/login"
+                        element={
+                            <PageTransition>
+                                <LoginPage onNavigateRegister={() => window.location.href = '/register'} />
+                            </PageTransition>
+                        }
+                    />
+                    <Route
+                        path="/register"
+                        element={
+                            <PageTransition>
+                                <RegisterPage onNavigateLogin={() => window.location.href = '/login'} />
+                            </PageTransition>
+                        }
+                    />
+
+                    <Route path="*" element={
+                        <ThemeProvider>
+                            <Layout>
+                                <Routes location={location}>
+                                    <Route path="/" element={
+                                        <PageTransition><DailyEntry /></PageTransition>
+                                    } />
+                                    <Route path="/history" element={
+                                        <PageTransition><History /></PageTransition>
+                                    } />
+                                    <Route path="/entry/:dateStr" element={
+                                        <PageTransition><DailyEntry /></PageTransition>
+                                    } />
+                                    <Route path="/analytics" element={
+                                        <PageTransition><AnalyticsDashboard /></PageTransition>
+                                    } />
+                                    {/* Onboarding can be a focused modal or route if editing profile */}
+                                    <Route path="/profile" element={
+                                        <PageTransition><OnboardingPage /></PageTransition>
+                                    } />
+                                </Routes>
+
+                                {/* Navigation Bar */}
+                                <nav className="bottom-nav-container">
+                                    <NavButton icon={PlusCircle} label="Track" to="/" active={location.pathname === '/' || location.pathname.startsWith('/entry')} />
+                                    <NavButton icon={Book} label="History" to="/history" active={location.pathname === '/history'} />
+                                    <NavButton icon={LayoutDashboard} label="Progress" to="/analytics" active={location.pathname === '/analytics'} />
+                                </nav>
+                            </Layout>
+                        </ThemeProvider>
+                    } />
+                </Routes>
+            </AnimatePresence>
+        </RequireUser>
+    )
 }
 
-export default App
+export default function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
+    )
+}
