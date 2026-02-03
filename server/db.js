@@ -146,7 +146,11 @@ const db = {
     async saveEntry(entry) {
         const { userId, date, weight, notes, meals, habits } = entry;
         if (DB_MODE === 'cloud') {
-            const { data: de, error } = await supabase.from('daily_entries').upsert({ user_id: userId, date, weight, notes }, { onConflict: 'user_id,date' }).select().single();
+            // First check if entry exists to get ID for upsert
+            const { data: existing } = await supabase.from('daily_entries').select('id').eq('user_id', userId).eq('date', date).single();
+            const id = existing?.id || crypto.randomUUID();
+
+            const { data: de, error } = await supabase.from('daily_entries').upsert({ id, user_id: userId, date, weight, notes }).select().single();
             if (error) throw error;
 
             await supabase.from('meals').delete().eq('entry_id', de.id);
