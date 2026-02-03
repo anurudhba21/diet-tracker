@@ -120,10 +120,14 @@ app.post('/api/goal', async (req, res) => {
     }
 });
 
-const server = app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+}
 
 process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
 });
+
+export default app;
