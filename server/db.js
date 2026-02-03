@@ -13,7 +13,7 @@ const sqlite3 = require('sqlite3').verbose();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DB_MODE = process.env.DB_MODE || 'local';
+const DB_MODE = process.env.VERCEL ? 'cloud' : (process.env.DB_MODE || 'local');
 const dbPath = path.resolve(__dirname, 'diet_tracker.db');
 
 let sqliteDb;
@@ -21,6 +21,11 @@ let supabase;
 
 if (DB_MODE === 'cloud') {
     console.log('☁️ Database Mode: CLOUD (Supabase)');
+
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+        throw new Error('CRITICAL: Missing Supabase Configuration. Please set SUPABASE_URL and SUPABASE_KEY in environment variables.');
+    }
+
     supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 } else {
     console.log('🏠 Database Mode: LOCAL (SQLite)');
