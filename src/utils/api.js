@@ -8,9 +8,20 @@ export const api = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
-        return data.user;
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            let errorMsg = `Server error: ${response.status}`;
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorMsg = errorJson.error || errorMsg;
+            } catch (e) {
+                // Not JSON, use status
+            }
+            throw new Error(errorMsg);
+        }
+
+        return await response.json().then(data => data.user);
     },
 
     login: async (email, password) => {
@@ -19,8 +30,20 @@ export const api = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            let errorMsg = `Login failed: ${response.status}`;
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorMsg = errorJson.error || errorMsg;
+            } catch (e) {
+                // Not JSON
+            }
+            throw new Error(errorMsg);
+        }
+
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
         return data.user;
     },
 
