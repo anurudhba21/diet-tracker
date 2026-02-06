@@ -174,7 +174,7 @@ export default function DailyEntry({ date }) {
                     padding: 'var(--space-2)',
                     marginBottom: 'var(--space-4)'
                 }}>
-                    <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0 }}> // Use slate-500 explicitly as text-muted might vary
+                    <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0 }}>
                         You are editing a past entry for <b>{new Date(selectedDate).toDateString()}</b>.
                     </p>
                 </div>
