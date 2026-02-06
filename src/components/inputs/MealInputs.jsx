@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState } from 'react'; // Kept if needed, otherwise remove
 import { api } from '../../utils/api';
-import { Sparkles, Loader2, Info } from 'lucide-react';
 
 const MEALS = [
     { id: 'breakfast', label: 'Breakfast' },
@@ -11,51 +10,10 @@ const MEALS = [
 ];
 
 const MealInputRow = ({ meal, value, onChange, error }) => {
-    const [analyzing, setAnalyzing] = useState(false);
-    const [analysis, setAnalysis] = useState(null);
-    const [aiError, setAiError] = useState(null);
-
-    const handleAnalyze = async () => {
-        if (!value || value.trim().length < 3) return;
-
-        setAnalyzing(true);
-        setAiError(null);
-        try {
-            const result = await api.analyzeMeal(value);
-            setAnalysis(result);
-        } catch (err) {
-            setAiError(err.message);
-        } finally {
-            setAnalyzing(false);
-        }
-    };
-
     return (
-        <div key={meal.id} className="input-group" style={{ marginBottom: '24px' }}>
-            <label className="input-label" htmlFor={meal.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>
-                    {meal.label} {error && <span style={{ color: 'var(--color-danger)', marginLeft: '4px' }}>*</span>}
-                </span>
-                {value && value.trim().length > 2 && (
-                    <button
-                        onClick={handleAnalyze}
-                        disabled={analyzing}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: 'var(--color-primary)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '0.8rem',
-                            padding: 0
-                        }}
-                    >
-                        {analyzing ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />}
-                        {analyzing ? 'Analyzing...' : 'Analyze'}
-                    </button>
-                )}
+        <div key={meal.id} className="input-group" style={{ marginBottom: '16px' }}>
+            <label className="input-label" htmlFor={meal.id}>
+                {meal.label} {error && <span style={{ color: 'var(--color-danger)', marginLeft: '4px' }}>*</span>}
             </label>
             <input
                 id={meal.id}
@@ -66,33 +24,6 @@ const MealInputRow = ({ meal, value, onChange, error }) => {
                 value={value || ''}
                 onChange={(e) => onChange(meal.id, e.target.value)}
             />
-
-            {/* AI Analysis Result */}
-            {analysis && (
-                <div style={{
-                    marginTop: '8px',
-                    background: 'var(--color-bg)',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    fontSize: '0.85rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    border: '1px solid var(--color-border)'
-                }}>
-                    <div style={{ color: '#ef4444', fontWeight: '600' }}>🔥 {analysis.calories} kcal</div>
-                    <div style={{ color: '#3b82f6', fontWeight: '600' }}>💪 {analysis.protein}</div>
-                    <div style={{ color: 'var(--color-text-muted)', flex: 1, textAlign: 'right', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {analysis.short_summary}
-                    </div>
-                </div>
-            )}
-
-            {aiError && (
-                <div style={{ marginTop: '4px', fontSize: '0.8rem', color: 'var(--color-danger)' }}>
-                    {aiError.startsWith('AI Error') ? aiError : `Server says: ${aiError}`}
-                </div>
-            )}
         </div>
     );
 };
