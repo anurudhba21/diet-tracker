@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDailyEntry } from '../hooks/useDailyEntry';
 import WeightInput from './inputs/WeightInput';
 import MealInputs from './inputs/MealInputs';
@@ -8,12 +9,35 @@ import confetti from 'canvas-confetti';
 import { CheckCircle, Edit2 } from 'lucide-react';
 
 export default function DailyEntry({ date }) {
+    const { dateStr } = useParams();
+    const navigate = useNavigate();
+
     // If no date is provided, use today.
     const todayStr = new Date().toISOString().split('T')[0];
-    const targetDate = date || todayStr;
-    const isToday = targetDate === todayStr;
 
-    const { entry, updateEntry, saveEntry: saveToStorage, deleteEntry, isSaved, hasExistingData } = useDailyEntry(targetDate);
+    // Priority: Prop > URL Param > Today
+    // We use a function to initialize state lazily or just direct value
+    const initialDate = date || dateStr || todayStr;
+
+    // If date prop changes (e.g. navigation), allow it to override local state
+    const [selectedDate, setSelectedDate] = useState(initialDate);
+
+    // Sync state if prop or param changes
+    useEffect(() => {
+        const target = date || dateStr;
+        if (target) setSelectedDate(target);
+    }, [date, dateStr]);
+
+    // Update URL when date changes (optional but good for consistency)
+    const handleDateChange = (newDate) => {
+        setSelectedDate(newDate);
+        // Optional: navigate to the new date URL to keep history consistent
+        // navigate(/entry/${newDate}); 
+    };
+
+    const isToday = selectedDate === todayStr;
+
+    const { entry, updateEntry, saveEntry: saveToStorage, deleteEntry, isSaved, hasExistingData } = useDailyEntry(selectedDate);
 
     // Default to editing if no data exists
     const [isEditing, setIsEditing] = useState(true);
@@ -82,7 +106,7 @@ export default function DailyEntry({ date }) {
                     </div>
                     <h2 style={{ marginBottom: '8px' }}>All Set!</h2>
                     <p className="text-muted" style={{ marginBottom: '24px' }}>
-                        You've tracked your progress for {new Date(targetDate).toDateString()}.
+                        You've tracked your progress for {new Date(selectedDate).toDateString()}.
                     </p>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
@@ -112,6 +136,18 @@ export default function DailyEntry({ date }) {
                     >
                         <Edit2 size={18} /> Edit Entry
                     </button>
+
+                    {/* Allow changing date even from summary */}
+                    <div style={{ marginTop: '20px' }}>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginRight: '8px' }}>View another day:</label>
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            max={todayStr}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}
+                        />
+                    </div>
                 </div>
             </div>
         );
@@ -119,14 +155,27 @@ export default function DailyEntry({ date }) {
 
     return (
         <div style={{ paddingBottom: '80px' }}>
+            <div className="card" style={{ marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px' }}>
+                <span style={{ fontWeight: 600 }}>Tracking for:</span>
+                <input
+                    type="date"
+                    value={selectedDate}
+                    max={todayStr}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="input-field"
+                    style={{ width: 'auto', padding: '6px 10px', margin: 0, height: 'auto' }}
+                />
+            </div>
+
             {!isToday && (
                 <div className="card" style={{
                     background: '#f1f5f9',
                     textAlign: 'center',
-                    padding: 'var(--space-2)'
+                    padding: 'var(--space-2)',
+                    marginBottom: 'var(--space-4)'
                 }}>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                        Editing Past Entry: {new Date(targetDate).toDateString()}
+                    <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0 }}> // Use slate-500 explicitly as text-muted might vary
+                        You are editing a past entry for <b>{new Date(selectedDate).toDateString()}</b>.
                     </p>
                 </div>
             )}
