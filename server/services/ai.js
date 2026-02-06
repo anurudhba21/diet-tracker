@@ -38,6 +38,6 @@ export const analyzeMeal = async (mealText) => {
         return JSON.parse(cleanJson);
     } catch (error) {
         console.error("AI Analysis Failed:", error);
-        throw new Error("Failed to analyze meal. Please try again.");
+        throw new Error(`AI Error: ${error.message || "Unknown error"}`);
     }
 };
