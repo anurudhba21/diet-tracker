@@ -163,5 +163,21 @@ export const api = {
         });
         if (!response.ok) throw new Error('Failed to save goal');
         return await response.json();
+    },
+
+    // AI Analysis
+    analyzeMeal: async (mealText) => {
+        const response = await fetch(`${API_URL}/analyze-meal`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mealText }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'AI Analysis failed');
+        }
+        return await response.json();
     }
 };
