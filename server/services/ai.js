@@ -12,7 +12,7 @@ export const analyzeMeal = async (mealText) => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
         const prompt = `
         Analyze the following meal description and provide a nutritional estimate.
