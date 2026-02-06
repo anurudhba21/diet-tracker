@@ -60,16 +60,17 @@ export default function History() {
                                     {item.weight ? `${item.weight} kg` : '—'}
                                 </td>
                                 <td style={{ padding: 'var(--space-3)' }}>
-                                    {Object.keys(item.habits || {}).filter(k => item.habits[k]).length > 0 ? (
+                                    {Object.keys(item.habits || {})
+                                        .filter(k => k !== 'Junk Food' && item.habits[k]).length > 0 ? (
                                         <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem' }}>
-                                            {Object.keys(item.habits || {}).filter(k => item.habits[k]).length}
+                                            {Object.keys(item.habits || {}).filter(k => k !== 'Junk Food' && item.habits[k]).length}
                                         </span>
                                     ) : (
                                         <span style={{ color: 'var(--color-text-muted)' }}>0</span>
                                     )}
                                 </td>
                                 <td style={{ padding: 'var(--space-3)' }}>
-                                    {item.junk_flag ? (
+                                    {item.habits && item.habits['Junk Food'] ? (
                                         <span style={{ color: 'var(--color-danger)' }}>Yes 🍔</span>
                                     ) : (
                                         <span style={{ color: 'var(--color-primary)' }}>No 🥗</span>
