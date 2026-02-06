@@ -254,6 +254,21 @@ app.post('/api/goal', authenticate, async (req, res) => {
     }
 });
 
+// --- AI Routes ---
+import { analyzeMeal } from './services/ai.js';
+
+app.post('/api/analyze-meal', authenticate, async (req, res) => {
+    try {
+        const { mealText } = req.body;
+        if (!mealText) return res.status(400).json({ error: 'Meal text is required' });
+
+        const result = await analyzeMeal(mealText);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
