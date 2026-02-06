@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { api } from '../../utils/api';
 import { Sparkles, Loader2, Info } from 'lucide-react';
 
+const MEALS = [
+    { id: 'breakfast', label: 'Breakfast' },
+    { id: 'mid_snack', label: 'Mid Snack' },
+    { id: 'lunch', label: 'Lunch' },
+    { id: 'evening', label: 'Evening' },
+    { id: 'dinner', label: 'Dinner' }
+];
+
 const MealInputRow = ({ meal, value, onChange, error }) => {
     const [analyzing, setAnalyzing] = useState(false);
     const [analysis, setAnalysis] = useState(null);
