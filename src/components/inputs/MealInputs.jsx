@@ -90,7 +90,7 @@ const MealInputRow = ({ meal, value, onChange, error }) => {
 
             {aiError && (
                 <div style={{ marginTop: '4px', fontSize: '0.8rem', color: 'var(--color-danger)' }}>
-                    Failed to analyze: {aiError}
+                    {aiError.startsWith('AI Error') ? aiError : `Server says: ${aiError}`}
                 </div>
             )}
         </div>
