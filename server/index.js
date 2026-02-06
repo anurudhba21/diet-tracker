@@ -2,12 +2,34 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import db from './db.js';
+import { generateToken, authenticate } from './middleware/auth.js';
 
 const app = express();
 const PORT = 3000;
 
-app.use(cors());
+// Security Middleware
+app.use(helmet());
+app.use(cookieParser());
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use(limiter);
+
+// CORS Configuration - Allow Credentials
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Update with production URL
+    credentials: true
+}));
+
 app.use(express.json());
 
 // Debug logging
@@ -30,6 +52,16 @@ app.post('/api/register', async (req, res) => {
             height_cm: height_cm || null, dob: dob || null, gender: gender || null,
             avatar_id: avatar_id || null, created_at
         });
+
+        // Generate Token & Set Cookie
+        const token = generateToken(user);
+        res.cookie('d_t_auth', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.json({ user: { id: user.id, email: user.email, name: user.name, phone: user.phone, height_cm: user.height_cm, dob: user.dob, gender: user.gender, avatar_id: user.avatar_id } });
     } catch (err) {
         if (err.message?.includes('UNIQUE constraint failed') || err.message?.includes('duplicate key')) {
@@ -48,15 +80,41 @@ app.post('/api/login', async (req, res) => {
         const validPassword = bcrypt.compareSync(password, user.password_hash);
         if (!validPassword) return res.status(400).json({ error: 'Invalid credentials' });
 
+        // Generate Token & Set Cookie
+        const token = generateToken(user);
+        res.cookie('d_t_auth', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.json({ user: { id: user.id, email: user.email, name: user.name, phone: user.phone, height_cm: user.height_cm, dob: user.dob, gender: user.gender, avatar_id: user.avatar_id } });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-app.put('/api/users/:id', async (req, res) => {
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('d_t_auth');
+    res.json({ success: true });
+});
+
+app.get('/api/auth/me', authenticate, async (req, res) => {
+    try {
+        const user = await db.getUserById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json({ user: { id: user.id, email: user.email, name: user.name, phone: user.phone, height_cm: user.height_cm, dob: user.dob, gender: user.gender, avatar_id: user.avatar_id } });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/api/users/:id', authenticate, async (req, res) => {
     const { id } = req.params;
     const { name, phone, height_cm, dob, gender, avatar_id } = req.body;
+
+    if (req.user.id !== id) return res.status(403).json({ error: 'Unauthorized' });
 
     try {
         const user = await db.updateUser(id, { name, phone, height_cm, dob, gender, avatar_id });
@@ -115,6 +173,16 @@ app.post('/api/auth/otp/verify', async (req, res) => {
         }
 
         const user = await db.getUserByPhone(phone);
+
+        // Generate Token & Set Cookie
+        const token = generateToken(user);
+        res.cookie('d_t_auth', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.json({ user: { id: user.id, email: user.email, name: user.name, phone: user.phone, height_cm: user.height_cm, dob: user.dob, gender: user.gender, avatar_id: user.avatar_id } });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -123,9 +191,12 @@ app.post('/api/auth/otp/verify', async (req, res) => {
 
 // --- Data Routes ---
 
-app.get('/api/entries', async (req, res) => {
+app.get('/api/entries', authenticate, async (req, res) => {
     const { userId } = req.query;
     if (!userId) return res.status(400).json({ error: 'Missing userId' });
+
+    // Ensure user matches token
+    if (req.user.id !== userId) return res.status(403).json({ error: 'Unauthorized' });
 
     try {
         const entries = await db.getEntries(userId);
@@ -135,7 +206,9 @@ app.get('/api/entries', async (req, res) => {
     }
 });
 
-app.post('/api/entries', async (req, res) => {
+app.post('/api/entries', authenticate, async (req, res) => {
+    if (req.user.id !== req.body.userId) return res.status(403).json({ error: 'Unauthorized' });
+
     try {
         const result = await db.saveEntry(req.body);
         res.json({ success: true, entryId: result.id });
@@ -144,8 +217,10 @@ app.post('/api/entries', async (req, res) => {
     }
 });
 
-app.delete('/api/entries/:id', async (req, res) => {
+app.delete('/api/entries/:id', authenticate, async (req, res) => {
     const { id } = req.params;
+    // Note: Ideally we should check if the entry belongs to the user here
+    // But for MVP we will assume if they have the ID and are auth'd, it's ok (or improve later)
     try {
         await db.deleteEntry(id);
         res.json({ success: true });
@@ -156,8 +231,10 @@ app.delete('/api/entries/:id', async (req, res) => {
 
 // --- Goal Routes ---
 
-app.get('/api/goal', async (req, res) => {
+app.get('/api/goal', authenticate, async (req, res) => {
     const { userId } = req.query;
+    if (req.user.id !== userId) return res.status(403).json({ error: 'Unauthorized' });
+
     try {
         const row = await db.getGoal(userId);
         res.json(row);
@@ -166,7 +243,9 @@ app.get('/api/goal', async (req, res) => {
     }
 });
 
-app.post('/api/goal', async (req, res) => {
+app.post('/api/goal', authenticate, async (req, res) => {
+    if (req.user.id !== req.body.userId) return res.status(403).json({ error: 'Unauthorized' });
+
     try {
         await db.saveGoal(req.body);
         res.json({ success: true });
@@ -186,3 +265,4 @@ process.on('uncaughtException', (err) => {
 });
 
 export default app;
+

@@ -10,6 +10,8 @@ import AnalyticsDashboard from './components/analytics/AnalyticsDashboard'
 import LoginPage from './components/auth/LoginPage'
 import RegisterPage from './components/auth/RegisterPage'
 import OnboardingPage from './components/auth/OnboardingPage'
+import PrivacyPolicy from './components/legal/PrivacyPolicy'
+import TermsOfService from './components/legal/TermsOfService'
 import NavButton from './components/NavButton'
 import PageTransition from './components/PageTransition'
 import { Book, LayoutDashboard, PlusCircle } from 'lucide-react'
@@ -22,7 +24,8 @@ function RequireUser({ children }) {
     if (loading) return null; // Or a spinner
 
     // Allow access to public paths without user
-    if (location.pathname === '/login' || location.pathname === '/register') {
+    const publicPaths = ['/login', '/register', '/privacy', '/terms'];
+    if (publicPaths.includes(location.pathname)) {
         return children;
     }
 
@@ -62,6 +65,22 @@ function AppContent() {
                         element={
                             <PageTransition>
                                 <RegisterPage onNavigateLogin={() => window.location.href = '/login'} />
+                            </PageTransition>
+                        }
+                    />
+                    <Route
+                        path="/privacy"
+                        element={
+                            <PageTransition>
+                                <PrivacyPolicy />
+                            </PageTransition>
+                        }
+                    />
+                    <Route
+                        path="/terms"
+                        element={
+                            <PageTransition>
+                                <TermsOfService />
                             </PageTransition>
                         }
                     />

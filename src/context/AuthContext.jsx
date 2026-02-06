@@ -3,7 +3,7 @@ import { api } from '../utils/api';
 // We still use localstorage for SESSION token/user persistence on client side for now 
 // but auth actions go to server.
 // Actually, let's keep a simple session mechanism in localStorage to persist login state across reloads.
-const SESSION_KEY = 'diet_tracker_current_session';
+const SESSION_KEY = 'diet_tracker_current_session'; // Keeping purely for optimisic UI if needed, but primary auth is now backend
 
 const AuthContext = createContext(null);
 
@@ -14,13 +14,10 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         const initSession = async () => {
             try {
-                const stored = localStorage.getItem(SESSION_KEY);
-                if (stored) {
-                    try {
-                        setUser(JSON.parse(stored));
-                    } catch {
-                        localStorage.removeItem(SESSION_KEY);
-                    }
+                // Check backend for valid session
+                const user = await api.getSession();
+                if (user) {
+                    setUser(user);
                 }
             } catch (error) {
                 console.error("Auth initialization error:", error);
@@ -34,14 +31,12 @@ export function AuthProvider({ children }) {
     const login = async (email, password) => {
         const user = await api.login(email, password);
         setUser(user);
-        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
         return user;
     };
 
     const register = async (userData) => {
         const user = await api.register(userData);
         setUser(user);
-        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
         return user;
     };
 
@@ -49,13 +44,12 @@ export function AuthProvider({ children }) {
         if (!user) return;
         const updatedUser = await api.updateUser(user.id, updates);
         setUser(updatedUser);
-        localStorage.setItem(SESSION_KEY, JSON.stringify(updatedUser));
         return updatedUser;
     };
 
-    const logout = () => {
+    const logout = async () => {
+        await api.logout();
         setUser(null);
-        localStorage.removeItem(SESSION_KEY);
         window.location.href = '/login';
     };
 
@@ -66,7 +60,6 @@ export function AuthProvider({ children }) {
     const loginWithPhone = async (phone, code) => {
         const user = await api.verifyOTP(phone, code);
         setUser(user);
-        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
         return user;
     };
 

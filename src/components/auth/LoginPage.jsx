@@ -289,6 +289,11 @@ export default function LoginPage({ onNavigateRegister }) {
                     </button>
                 </p>
             </motion.div>
+
+            <div style={{ position: 'absolute', bottom: '20px', left: 0, right: 0, textAlign: 'center', fontSize: '0.8rem', color: 'var(--color-text-muted)', opacity: 0.7 }}>
+                <a href="/privacy" style={{ color: 'inherit', marginRight: '15px' }}>Privacy Policy</a>
+                <a href="/terms" style={{ color: 'inherit' }}>Terms of Service</a>
+            </div>
         </div>
     );
 }

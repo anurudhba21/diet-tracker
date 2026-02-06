@@ -6,7 +6,8 @@ export const api = {
         const response = await fetch(`${API_URL}/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
+            body: JSON.stringify(userData),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -28,7 +29,8 @@ export const api = {
         const response = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ email, password }),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -47,11 +49,29 @@ export const api = {
         return data.user;
     },
 
+    getSession: async () => {
+        try {
+            const response = await fetch(`${API_URL}/auth/me`, {
+                credentials: 'include'
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data.user;
+        } catch {
+            return null;
+        }
+    },
+
+    logout: async () => {
+        await fetch(`${API_URL}/logout`, { method: 'POST', credentials: 'include' });
+    },
+
     updateUser: async (userId, updates) => {
         const response = await fetch(`${API_URL}/users/${userId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
+            body: JSON.stringify(updates),
+            credentials: 'include'
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
@@ -63,7 +83,8 @@ export const api = {
         const response = await fetch(`${API_URL}/auth/otp/request`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone })
+            body: JSON.stringify({ phone }),
+            credentials: 'include'
         });
         if (!response.ok) {
             const data = await response.json();
@@ -76,7 +97,8 @@ export const api = {
         const response = await fetch(`${API_URL}/auth/otp/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone, code })
+            body: JSON.stringify({ phone, code }),
+            credentials: 'include'
         });
         if (!response.ok) {
             const data = await response.json();
@@ -87,17 +109,18 @@ export const api = {
 
     // Entries
     getEntries: async (userId) => {
-        const response = await fetch(`${API_URL}/entries?userId=${userId}`);
+        const response = await fetch(`${API_URL}/entries?userId=${userId}`, { credentials: 'include' });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
-        return data; // Returns array, may need conversion to map for frontend legacy logic
+        return data;
     },
 
     saveEntry: async (entryData) => {
         const response = await fetch(`${API_URL}/entries`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entryData)
+            body: JSON.stringify(entryData),
+            credentials: 'include'
         });
         if (!response.ok) {
             const data = await response.json();
@@ -108,7 +131,8 @@ export const api = {
 
     deleteEntry: async (id) => {
         const response = await fetch(`${API_URL}/entries/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'
         });
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: `Status ${response.status}` }));
@@ -119,10 +143,9 @@ export const api = {
 
     // Goal
     getGoal: async (userId) => {
-        const response = await fetch(`${API_URL}/goal?userId=${userId}`);
+        const response = await fetch(`${API_URL}/goal?userId=${userId}`, { credentials: 'include' });
         const data = await response.json();
         if (!response.ok) return null; // No goal yet
-        // Map snake_case to camelCase
         if (!data) return null;
         return {
             startWeight: data.start_weight,
@@ -135,7 +158,8 @@ export const api = {
         const response = await fetch(`${API_URL}/goal`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(goalData)
+            body: JSON.stringify(goalData),
+            credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to save goal');
         return await response.json();
