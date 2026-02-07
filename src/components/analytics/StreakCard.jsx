@@ -2,17 +2,27 @@ export default function StreakCard({ streaks }) {
     const { current, longest } = streaks || { current: 0, longest: 0 };
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-            <div className="card" style={{ textAlign: 'center', marginBottom: 0, background: 'linear-gradient(to bottom right, #fff7ed, #fff)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: 'var(--space-1)' }}>🔥</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ea580c' }}>{current}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Current Streak</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+            <div className="glass-panel" style={{
+                textAlign: 'center',
+                marginBottom: 0,
+                background: 'rgba(249, 115, 22, 0.1)', // Orange-tinted glass
+                borderColor: 'rgba(249, 115, 22, 0.2)'
+            }}>
+                <div style={{ fontSize: '2rem', marginBottom: '8px', filter: 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))' }}>🔥</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#fb923c' }}>{current}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Current Streak</div>
             </div>
 
-            <div className="card" style={{ textAlign: 'center', marginBottom: 0, background: 'linear-gradient(to bottom right, #f0fdf4, #fff)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: 'var(--space-1)' }}>🏆</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#16a34a' }}>{longest}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Longest Streak</div>
+            <div className="glass-panel" style={{
+                textAlign: 'center',
+                marginBottom: 0,
+                background: 'rgba(34, 197, 94, 0.1)', // Green-tinted glass
+                borderColor: 'rgba(34, 197, 94, 0.2)'
+            }}>
+                <div style={{ fontSize: '2rem', marginBottom: '8px', filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.5))' }}>🏆</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#4ade80' }}>{longest}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Longest Streak</div>
             </div>
         </div>
     );

@@ -104,17 +104,17 @@ export function useDailyEntry(dateStr) {
             errors.push('weight');
         }
 
-        // Strict Validation: All meals mandatory
-        const requiredFields = ['breakfast', 'mid_snack', 'lunch', 'evening', 'dinner'];
-        requiredFields.forEach(field => {
-            if (!entry[field] || entry[field].trim() === '') {
-                errors.push(field);
-            }
-        });
-
         if (errors.length > 0) {
             return { success: false, errors };
         }
+
+        // Strict Validation Removed: Allow partial saves
+        // const requiredFields = ['breakfast', 'mid_snack', 'lunch', 'evening', 'dinner'];
+        // requiredFields.forEach(field => {
+        //     if (!entry[field] || entry[field].trim() === '') {
+        //         errors.push(field);
+        //     }
+        // });
 
         // Prepare data for API (Un-flatten)
         const apiPayload = {

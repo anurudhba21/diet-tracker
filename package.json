@@ -11,6 +11,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.2",
+    "@capacitor/cli": "^8.0.2",
+    "@capacitor/core": "^8.0.2",
     "@supabase/supabase-js": "^2.93.3",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",

@@ -99,53 +99,77 @@ export default function DailyEntry({ date }) {
     // Summary View
     if (!isEditing && hasExistingData) {
         return (
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '60vh', justifyContent: 'center' }}>
-                <div className="card" style={{ textAlign: 'center', padding: 'var(--space-8)', width: '100%' }}>
-                    <div style={{ color: 'var(--color-primary)', marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
-                        <CheckCircle size={64} />
+            <div style={{ padding: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '50vh', justifyContent: 'center' }}>
+                <div className="glass-panel" style={{ textAlign: 'center', padding: '40px 24px', width: '100%', maxWidth: '400px' }}>
+                    <div style={{
+                        color: 'var(--primary-500)',
+                        marginBottom: '24px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        filter: 'drop-shadow(0 0 15px var(--primary-glow))'
+                    }}>
+                        <CheckCircle size={80} />
                     </div>
-                    <h2 style={{ marginBottom: '8px' }}>All Set!</h2>
-                    <p className="text-muted" style={{ marginBottom: '24px' }}>
-                        You've tracked your progress for {new Date(selectedDate).toDateString()}.
+                    <h2 className="text-gradient" style={{ marginBottom: '8px', fontSize: '2rem' }}>All Set!</h2>
+                    <p style={{ marginBottom: '32px', color: 'var(--text-muted)' }}>
+                        You've tracked your progress for <br />
+                        <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{new Date(selectedDate).toDateString()}</span>
                     </p>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
-                        <div style={{ background: 'var(--color-bg)', padding: '12px', borderRadius: '12px' }}>
-                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>Weight</div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{entry.weight} kg</div>
+                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '4px' }}>Weight</div>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>{entry.weight} <span style={{ fontSize: '1rem' }}>kg</span></div>
                         </div>
-                        <div style={{ background: 'var(--color-bg)', padding: '12px', borderRadius: '12px' }}>
-                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>Habits</div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '4px' }}>Habits</div>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
                                 {['buttermilk_flag', 'omega3_flag'].filter(k => entry[k]).length}/2
                             </div>
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '12px', background: entry.junk_flag ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', border: `1px solid ${entry.junk_flag ? 'var(--color-danger)' : 'var(--color-primary)'}` }}>
-                        <span style={{ fontSize: '1.2rem' }}>{entry.junk_flag ? '🍔' : '🥗'}</span>
-                        <span style={{ fontWeight: 'bold', color: entry.junk_flag ? 'var(--color-danger)' : 'var(--color-primary)' }}>
-                            {entry.junk_flag ? 'Junk Food Eaten' : 'No Junk Food!'}
+                    <div style={{
+                        marginBottom: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '12px',
+                        padding: '16px',
+                        borderRadius: '16px',
+                        background: entry.junk_flag ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                        border: `1px solid ${entry.junk_flag ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
+                    }}>
+                        <span style={{ fontSize: '1.5rem' }}>{entry.junk_flag ? '🍔' : '🥗'}</span>
+                        <span style={{ fontWeight: 700, color: entry.junk_flag ? '#f87171' : '#34d399' }}>
+                            {entry.junk_flag ? 'Junk Food Eaten' : 'Clean Eating!'}
                         </span>
                     </div>
 
                     <button
-                        className="btn"
+                        className="btn-ghost"
                         onClick={() => setIsEditing(true)}
-                        style={{ width: '100%', background: 'var(--color-surface)', color: 'var(--color-primary)', border: '2px solid var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     >
                         <Edit2 size={18} /> Edit Entry
                     </button>
 
                     {/* Allow changing date even from summary */}
-                    <div style={{ marginTop: '20px' }}>
-                        <label style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginRight: '8px' }}>View another day:</label>
+                    <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                        <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>View another day:</label>
                         <input
                             type="date"
                             value={selectedDate}
                             max={todayStr}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}
+                            style={{
+                                padding: '6px 10px',
+                                borderRadius: '8px',
+                                border: '1px solid var(--glass-border)',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'var(--text-main)',
+                                fontFamily: 'inherit'
+                            }}
                         />
                     </div>
                 </div>
@@ -154,28 +178,31 @@ export default function DailyEntry({ date }) {
     }
 
     return (
-        <div style={{ paddingBottom: '80px' }}>
-            <div className="card" style={{ marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px' }}>
-                <span style={{ fontWeight: 600 }}>Tracking for:</span>
+        <div style={{ paddingBottom: '100px' }}>
+            <div className="glass-panel" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>Tracking for:</span>
                 <input
                     type="date"
                     value={selectedDate}
                     max={todayStr}
                     onChange={(e) => setSelectedDate(e.target.value)}
                     className="input-field"
-                    style={{ width: 'auto', padding: '6px 10px', margin: 0, height: 'auto' }}
+                    style={{ width: 'auto', padding: '8px 12px', margin: 0, height: 'auto', fontSize: '0.9rem' }}
                 />
             </div>
 
             {!isToday && (
-                <div className="card" style={{
-                    background: '#f1f5f9',
+                <div style={{
+                    background: 'rgba(59, 130, 246, 0.1)',
+                    border: '1px solid rgba(59, 130, 246, 0.2)',
                     textAlign: 'center',
-                    padding: 'var(--space-2)',
-                    marginBottom: 'var(--space-4)'
+                    padding: '12px',
+                    marginBottom: '24px',
+                    borderRadius: 'var(--radius-md)',
+                    color: '#60a5fa'
                 }}>
-                    <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0 }}>
-                        You are editing a past entry for <b>{new Date(selectedDate).toDateString()}</b>.
+                    <p style={{ fontSize: '0.9rem', margin: 0 }}>
+                        Values for <b>{new Date(selectedDate).toDateString()}</b>
                     </p>
                 </div>
             )}
@@ -196,20 +223,22 @@ export default function DailyEntry({ date }) {
             />
 
             {/* Junk Food Section */}
-            <div className="card" style={{ borderLeft: `4px solid ${entry.junk_flag ? 'var(--color-danger)' : 'var(--color-primary)'}` }}>
+            <div className="glass-panel" style={{ borderLeft: `4px solid ${entry.junk_flag ? 'var(--danger)' : 'var(--primary-500)'}`, padding: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
-                        <h3 className="input-label" style={{ margin: 0 }}>Junk Food</h3>
-                        <p className="text-muted" style={{ fontSize: '0.85rem', margin: 0 }}>Did you consume any junk food today?</p>
+                        <h3 className="input-label" style={{ margin: 0, fontSize: '1.1rem' }}>Junk Food</h3>
+                        <p style={{ fontSize: '0.85rem', margin: '4px 0 0 0', color: 'var(--text-muted)' }}>Did you consume any junk food?</p>
                     </div>
                     <button
                         className="btn"
                         style={{
                             width: 'auto',
-                            padding: 'var(--space-2) var(--space-4)',
-                            backgroundColor: entry.junk_flag ? 'var(--color-danger)' : 'var(--color-border)',
-                            color: entry.junk_flag ? 'white' : 'var(--color-text)',
-                            transition: 'all 0.3s ease'
+                            padding: '8px 16px',
+                            background: entry.junk_flag ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                            border: `1px solid ${entry.junk_flag ? 'var(--danger)' : 'var(--primary-500)'}`,
+                            color: entry.junk_flag ? '#f87171' : '#34d399',
+                            transition: 'all 0.3s ease',
+                            fontWeight: 600
                         }}
                         onClick={() => updateEntry({ junk_flag: !entry.junk_flag })}
                     >
@@ -229,21 +258,23 @@ export default function DailyEntry({ date }) {
             />
 
             <div style={{
-                marginTop: 'var(--space-6)',
+                marginTop: '32px',
                 display: 'flex',
-                gap: 'var(--space-2)'
+                gap: '12px'
             }}>
                 {hasExistingData && (
                     <button
-                        className="btn"
+                        className="btn-ghost"
                         onClick={() => {
-                            if (deleteEntry()) {
+                            if (confirm('Delete this entry?')) {
+                                deleteEntry();
                                 window.dispatchEvent(new CustomEvent('entry-deleted'));
                             }
                         }}
                         style={{
-                            backgroundColor: 'var(--color-danger)',
-                            flex: 1
+                            color: 'var(--danger)',
+                            flex: 1,
+                            borderColor: 'rgba(239, 68, 68, 0.3)'
                         }}
                     >
                         Delete
@@ -253,14 +284,15 @@ export default function DailyEntry({ date }) {
                     className="btn"
                     onClick={saveEntry}
                     style={{
-                        backgroundColor: isSaved ? 'var(--color-primary-dark)' : 'var(--color-primary)',
                         flex: 2,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '0.5rem'
+                        gap: '8px',
+                        background: isSaved ? 'var(--primary-600)' : 'linear-gradient(135deg, var(--primary-500), var(--primary-600))'
                     }}
                 >
+                    {isSaved ? <CheckCircle size={18} /> : null}
                     {isSaved ? 'Saved!' : 'Save Entry'}
                 </button>
             </div>

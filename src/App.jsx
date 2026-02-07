@@ -21,7 +21,20 @@ function RequireUser({ children }) {
     const { user, loading } = useAuth();
     const location = useLocation();
 
-    if (loading) return null; // Or a spinner
+    if (loading) {
+        return (
+            <div style={{
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--color-bg, #0f172a)',
+                color: 'var(--color-text, #f8fafc)'
+            }}>
+                <div className="loader">Loading App...</div>
+            </div>
+        );
+    }
 
     // Allow access to public paths without user
     const publicPaths = ['/login', '/register', '/privacy', '/terms'];
@@ -108,10 +121,10 @@ function AppContent() {
                                 </Routes>
 
                                 {/* Navigation Bar */}
-                                <nav className="bottom-nav-container">
-                                    <NavButton icon={PlusCircle} label="Track" to="/" active={location.pathname === '/' || location.pathname.startsWith('/entry')} />
-                                    <NavButton icon={Book} label="History" to="/history" active={location.pathname === '/history'} />
-                                    <NavButton icon={LayoutDashboard} label="Progress" to="/analytics" active={location.pathname === '/analytics'} />
+                                <nav className="nav-island">
+                                    <NavButton icon={PlusCircle} label="Track" to="/" />
+                                    <NavButton icon={Book} label="History" to="/history" />
+                                    <NavButton icon={LayoutDashboard} label="Progress" to="/analytics" />
                                 </nav>
                             </Layout>
                         </ThemeProvider>

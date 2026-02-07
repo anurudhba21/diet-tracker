@@ -4,28 +4,12 @@ export default function NavButton({ to, icon: Icon, label }) {
     return (
         <NavLink
             to={to}
-            className={({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`}
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--color-text-muted)',
-                transition: 'color 0.2s',
-                textDecoration: 'none'
-            }}
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
-            {({ isActive }) => (
-                <>
-                    <Icon size={24} color={isActive ? 'var(--color-primary)' : 'currentColor'} />
-                    <span style={{ fontSize: '0.75rem', marginTop: '4px', color: isActive ? 'var(--color-primary)' : 'currentColor' }}>
-                        {label}
-                    </span>
-                </>
-            )}
+            <Icon size={24} />
+            <span className="nav-label" style={{ fontSize: '0.7rem', marginTop: '4px' }}>
+                {label}
+            </span>
         </NavLink>
     );
 }

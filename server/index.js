@@ -26,7 +26,7 @@ app.use(limiter);
 
 // CORS Configuration - Allow Credentials
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Update with production URL
+    origin: true, // Allow all origins for debugging
     credentials: true
 }));
 
@@ -256,8 +256,8 @@ app.post('/api/goal', authenticate, async (req, res) => {
 
 
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-    app.listen(PORT, () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
     });
 }
 

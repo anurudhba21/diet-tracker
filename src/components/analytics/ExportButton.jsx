@@ -39,16 +39,19 @@ export default function ExportButton() {
     return (
         <button
             onClick={handleExport}
-            className="btn"
+            className="btn-outline"
             style={{
-                backgroundColor: 'var(--color-bg)',
-                color: 'var(--color-text)',
-                border: '1px solid var(--color-border)',
-                width: 'auto',
-                padding: 'var(--space-2) var(--space-3)'
+                borderRadius: '20px',
+                padding: '10px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 600
             }}
         >
-            📂 Export Data
+            <span style={{ fontSize: '1.1rem' }}>📂</span> Export Data
         </button>
     );
 }

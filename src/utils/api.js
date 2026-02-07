@@ -1,3 +1,5 @@
+// For Android Emulator, use 10.0.2.2. For Vercel, use the Vercel URL.
+// const API_URL = 'https://diet-tracker-drab.vercel.app/api';
 const API_URL = '/api';
 
 export const api = {

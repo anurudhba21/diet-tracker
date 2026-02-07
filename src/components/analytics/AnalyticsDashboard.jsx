@@ -10,6 +10,22 @@ import HabitStats from './HabitStats';
 import ExportButton from './ExportButton';
 import { TrendingUp, PlusCircle, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+};
 
 export default function AnalyticsDashboard() {
     const { user, updateProfile } = useAuth();
@@ -89,102 +105,121 @@ export default function AnalyticsDashboard() {
 
     if (!hasEntries) {
         return (
-            <div style={{ paddingBottom: '80px', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-                <div className="card" style={{ textAlign: 'center', padding: 'var(--space-8)', border: '2px dashed var(--color-border)' }}>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{ paddingBottom: '90px', display: 'flex', flexDirection: 'column', gap: '24px' }}
+            >
+                <div className="glass-panel" style={{ textAlign: 'center', padding: '40px 24px', border: '1px solid var(--primary-500)', boxShadow: '0 0 40px rgba(16, 185, 129, 0.1)' }}>
                     <div style={{
-                        width: '64px',
-                        height: '64px',
-                        background: 'var(--color-bg)',
+                        width: '80px',
+                        height: '80px',
+                        background: 'rgba(16, 185, 129, 0.1)',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        margin: '0 auto var(--space-4)',
-                        color: 'var(--color-primary)'
+                        margin: '0 auto 24px',
+                        color: 'var(--primary-500)',
+                        border: '1px solid var(--primary-500)'
                     }}>
-                        <TrendingUp size={32} />
+                        <TrendingUp size={40} />
                     </div>
-                    <h2 style={{ marginBottom: 'var(--space-2)' }}>Ready to see progress?</h2>
-                    <p className="text-muted" style={{ marginBottom: 'var(--space-6)' }}>
-                        Your dashboard is waiting! Log your first weight entry to unlock charts, streaks, and metabolic tracking.
+                    <h2 className="text-gradient" style={{ marginBottom: '8px', fontSize: '1.75rem' }}>Ready to Climb?</h2>
+                    <p className="text-muted" style={{ marginBottom: '32px', maxWidth: '300px', marginLeft: 'auto', marginRight: 'auto' }}>
+                        Your personal dashboard is waiting! Log your first weight entry to unlock charts, streaks, and metabolic tracking.
                     </p>
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         className="btn"
                         onClick={() => navigate('/')}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '0 auto' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '0 auto', maxWidth: '250px' }}
                     >
-                        <PlusCircle size={18} /> Log Your First Entry
-                    </button>
+                        <PlusCircle size={20} /> Log First Entry
+                    </motion.button>
                 </div>
 
-                <div className="card" style={{ opacity: 0.5, pointerEvents: 'none' }}>
-                    <h3 style={{ marginBottom: 'var(--space-4)', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Weight Trend <span style={{ fontSize: '0.8rem', background: 'var(--color-border)', padding: '2px 8px', borderRadius: '4px' }}>Locked</span>
+                <div className="glass-panel" style={{ opacity: 0.6, pointerEvents: 'none', filter: 'grayscale(100%)' }}>
+                    <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Weight Trend <span style={{ fontSize: '0.7rem', background: 'var(--glass-border)', padding: '2px 8px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>LOCKED</span>
                     </h3>
-                    <div style={{ height: '200px', background: 'var(--color-bg)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <p className="text-muted">Chart will appear after 2 entries</p>
+                    <div style={{ height: '200px', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--glass-border)' }}>
+                        <p className="text-muted" style={{ fontSize: '0.9rem' }}>Chart unlocks after 2 entries</p>
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', opacity: 0.5 }}>
-                    <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                        <div className="text-muted" style={{ fontSize: '0.8rem' }}>Streaks</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>--</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', opacity: 0.6 }}>
+                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
+                        <div className="text-muted" style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Streaks</div>
+                        <div style={{ fontSize: '2rem', fontWeight: '800', lineHeight: 1, marginTop: '8px', color: 'var(--text-dim)' }}>--</div>
                     </div>
-                    <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                        <div className="text-muted" style={{ fontSize: '0.8rem' }}>Remaining</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>--</div>
+                    <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
+                        <div className="text-muted" style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Remaining</div>
+                        <div style={{ fontSize: '2rem', fontWeight: '800', lineHeight: 1, marginTop: '8px', color: 'var(--text-dim)' }}>--</div>
                     </div>
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
     return (
-        <div style={{ paddingBottom: '80px' }}>
-            <StreakCard streaks={streaks} />
+        <motion.div
+            style={{ paddingBottom: '100px' }}
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+        >
+            <motion.div variants={itemVariants}>
+                <StreakCard streaks={streaks} />
+            </motion.div>
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: 'var(--space-4)',
-                marginBottom: 'var(--space-6)'
-            }}>
+            <motion.div
+                variants={itemVariants}
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '16px',
+                    marginBottom: '24px'
+                }}
+            >
                 <MetricCard label="Current" value={stats?.current} unit="kg" isPrimary />
-                <MetricCard label="Lost" value={stats?.lost} unit="kg" color="var(--color-primary-dark)" />
-                <MetricCard label="Remaining" value={stats?.remaining} unit="kg" color="#f59e0b" />
-            </div>
+                <MetricCard label="Lost" value={stats?.lost} unit="kg" color="var(--primary-600)" />
+                <MetricCard label="Remaining" value={stats?.remaining} unit="kg" color="var(--accent-gold)" />
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate('/profile')}
+                    style={{ cursor: 'pointer' }}
+                >
+                    <MetricCard label="Target" value={goal.targetWeight} unit="kg" color="var(--accent-blue)" />
+                </motion.div>
+            </motion.div>
 
-            <div className="card">
-                <h3 style={{ marginBottom: 'var(--space-4)', fontSize: '1.1rem' }}>Weight Trend</h3>
+            <motion.div variants={itemVariants} className="glass-panel">
+                <h3 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Weight Trend</h3>
                 <WeightChart data={chartData} target={goal.targetWeight} />
-            </div>
+            </motion.div>
 
-            <div style={{ marginTop: 'var(--space-6)' }}>
+            <motion.div variants={itemVariants} style={{ marginTop: '24px' }}>
                 <MetricCard label="Total Progress" value={stats?.percent} unit="%" fullWidth />
-            </div>
+            </motion.div>
 
-            <div style={{ marginTop: 'var(--space-6)' }}>
+            <motion.div variants={itemVariants} style={{ marginTop: '24px' }}>
                 <HabitStats stats={habitStats} />
-            </div>
+            </motion.div>
 
-            <div style={{ marginTop: 'var(--space-8)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', alignItems: 'center' }}>
+            <motion.div variants={itemVariants} style={{ marginTop: '32px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+                <ExportButton />
+
                 <button
                     onClick={() => navigate('/profile')}
-                    style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'var(--color-text-muted)',
-                        textDecoration: 'underline',
-                        cursor: 'pointer',
-                        fontSize: '0.9rem'
-                    }}
+                    className="btn-ghost"
+                    style={{ fontSize: '0.9rem', opacity: 0.8 }}
                 >
-                    Adjust Goal
+                    Adjust Goals & Settings
                 </button>
-
-                <ExportButton />
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 }

@@ -2,7 +2,23 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Calendar, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+};
 
 export default function History() {
     const { user } = useAuth();
@@ -21,62 +37,91 @@ export default function History() {
 
     if (entries.length === 0) {
         return (
-            <div className="card" style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
-                <p className="text-muted">No history yet.</p>
-                <p className="text-muted">Start logging today!</p>
-            </div>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="glass-panel"
+                style={{ textAlign: 'center', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}
+            >
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '24px', borderRadius: '50%' }}>
+                    <Calendar size={48} color="var(--text-muted)" />
+                </div>
+                <h3 className="text-gradient">No History Yet</h3>
+                <p className="text-muted" style={{ maxWidth: '280px', margin: '0 auto' }}>
+                    Start logging your daily progress to see your history build up here!
+                </p>
+                <button onClick={() => navigate('/')} className="btn" style={{ marginTop: '16px' }}>
+                    Track Today
+                </button>
+            </motion.div>
         );
     }
 
     return (
-        <div>
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 'var(--space-4)' }}>
-                    <thead>
-                        <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
-                            <th style={{ padding: 'var(--space-3)', color: 'var(--color-text-muted)' }}>Date</th>
-                            <th style={{ padding: 'var(--space-3)', color: 'var(--color-text-muted)' }}>Weight</th>
-                            <th style={{ padding: 'var(--space-3)', color: 'var(--color-text-muted)' }}>Habits</th>
-                            <th style={{ padding: 'var(--space-3)', color: 'var(--color-text-muted)' }}>Junk?</th>
-                            <th style={{ padding: 'var(--space-3)', color: 'var(--color-text-muted)', textAlign: 'right' }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {entries.map((item) => (
-                            <tr
+        <div style={{ paddingBottom: '100px' }}>
+            <h2 className="text-gradient" style={{ marginBottom: '24px', fontSize: '1.75rem' }}>History</h2>
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+            >
+                <AnimatePresence mode="popLayout">
+                    {entries.map((item) => {
+                        const habitCount = Object.keys(item.habits || {}).filter(k => k !== 'Junk Food' && item.habits[k]).length;
+                        const isJunk = item.habits && item.habits['Junk Food']; // Legacy check
+                        const junkFlag = item.junk_flag; // New flag
+
+                        return (
+                            <motion.div
                                 key={item.date}
+                                variants={itemVariants}
+                                layout
+                                exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
                                 onClick={() => navigate(`/entry/${item.date}`)}
+                                className="glass-panel"
                                 style={{
-                                    borderBottom: '1px solid var(--color-border)',
+                                    padding: '16px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
                                     cursor: 'pointer',
-                                    transition: 'background 0.2s',
-                                    ':hover': { background: 'var(--color-bg)' }
+                                    transition: 'border-color 0.2s ease', // Only animate non-layout props with CSS
+                                    borderLeft: `4px solid ${junkFlag ? 'var(--danger)' : 'var(--primary-500)'}`
                                 }}
+                                whileHover={{ scale: 1.02, backgroundColor: 'rgba(15, 23, 42, 0.75)' }}
+                                whileTap={{ scale: 0.98 }}
                             >
-                                <td style={{ padding: 'var(--space-3)', fontWeight: '500' }}>
-                                    {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', weekday: 'short' })}
-                                </td>
-                                <td style={{ padding: 'var(--space-3)' }}>
-                                    {item.weight ? `${item.weight} kg` : '—'}
-                                </td>
-                                <td style={{ padding: 'var(--space-3)' }}>
-                                    {Object.keys(item.habits || {})
-                                        .filter(k => k !== 'Junk Food' && item.habits[k]).length > 0 ? (
-                                        <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem' }}>
-                                            {Object.keys(item.habits || {}).filter(k => k !== 'Junk Food' && item.habits[k]).length}
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-main)' }}>
+                                            {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', weekday: 'short' })}
+                                        </h4>
+                                        {item.weight && (
+                                            <span style={{
+                                                background: 'rgba(255,255,255,0.1)',
+                                                padding: '2px 8px',
+                                                borderRadius: '12px',
+                                                fontSize: '0.8rem',
+                                                color: 'var(--text-main)',
+                                                fontWeight: 600
+                                            }}>
+                                                {item.weight} kg
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            Drafts: <strong style={{ color: 'var(--text-main)' }}>{habitCount}/2</strong>
                                         </span>
-                                    ) : (
-                                        <span style={{ color: 'var(--color-text-muted)' }}>0</span>
-                                    )}
-                                </td>
-                                <td style={{ padding: 'var(--space-3)' }}>
-                                    {item.habits && item.habits['Junk Food'] ? (
-                                        <span style={{ color: 'var(--color-danger)' }}>Yes 🍔</span>
-                                    ) : (
-                                        <span style={{ color: 'var(--color-primary)' }}>No 🥗</span>
-                                    )}
-                                </td>
-                                <td style={{ padding: 'var(--space-3)', textAlign: 'right' }}>
+                                        <span style={{ width: '4px', height: '4px', background: 'currentColor', borderRadius: '50%' }} />
+                                        <span>
+                                            {junkFlag ? <span style={{ color: '#f87171' }}>Junk 🍔</span> : <span style={{ color: '#34d399' }}>Clean 🥗</span>}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -91,16 +136,18 @@ export default function History() {
                                                     });
                                             }
                                         }}
-                                        style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: '4px' }}
+                                        className="btn-ghost"
+                                        style={{ padding: '8px', color: 'var(--text-muted)', minWidth: 'auto' }}
                                     >
                                         <Trash2 size={18} />
                                     </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                                    <ChevronRight size={20} color="var(--text-muted)" />
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
+            </motion.div>
         </div>
     );
 }

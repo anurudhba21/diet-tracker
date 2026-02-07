@@ -163,176 +163,185 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div style={{ minHeight: 'calc(100vh - 120px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div className="card" style={{ width: '100%', maxWidth: '450px', margin: 'auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                    <h2 style={{ textAlign: 'center', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <User size={24} /> My Profile
-                    </h2>
-                    <button
-                        onClick={handleLogout}
-                        style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}
-                        type="button"
-                    >
-                        <LogOut size={16} /> Log Out
-                    </button>
-                </div>
+        <>
+            <div className="ambient-bg">
+                <div className="orb orb-primary" />
+                <div className="orb orb-accent" style={{ animationDelay: '-10s' }} />
+            </div>
 
-                <p style={{ textAlign: 'center', marginBottom: 'var(--space-4)', color: 'var(--color-text-muted)' }}>
-                    Setting up your health profile.
-                </p>
+            <div style={{ minHeight: 'calc(100vh - 100px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', margin: 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                        <h2 className="text-gradient" style={{ textAlign: 'center', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem' }}>
+                            <User size={24} /> My Profile
+                        </h2>
+                        <button
+                            onClick={handleLogout}
+                            className="btn-ghost"
+                            style={{ color: 'var(--danger)', fontSize: '0.9rem', fontWeight: 'bold' }}
+                            type="button"
+                        >
+                            <LogOut size={16} style={{ marginRight: '6px' }} /> Log Out
+                        </button>
+                    </div>
 
-                {/* BMI Display Card */}
-                {bmi && (
-                    <div className="card" style={{
-                        background: 'var(--color-bg)',
-                        border: `1px solid ${bmi.color}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '12px',
-                        marginBottom: '20px',
-                        gap: '4px'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: bmi.color }}>
-                            <Activity size={18} />
-                            <span style={{ fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current BMI</span>
-                        </div>
-                        <div style={{ fontSize: '2rem', fontWeight: 800 }}>{bmi.value}</div>
+                    <p style={{ textAlign: 'center', marginBottom: '32px', color: 'var(--text-muted)' }}>
+                        Manage your health profile and goals.
+                    </p>
+
+                    {/* BMI Display Card */}
+                    {bmi && (
                         <div style={{
-                            padding: '2px 10px',
-                            background: bmi.color,
-                            color: 'white',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
-                            fontWeight: 'bold'
+                            background: 'rgba(15, 23, 42, 0.6)',
+                            border: `1px solid ${bmi.color}`,
+                            borderRadius: 'var(--radius-md)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '20px',
+                            marginBottom: '32px',
+                            gap: '8px',
+                            boxShadow: `0 0 20px ${bmi.color}20`
                         }}>
-                            {bmi.category}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: bmi.color }}>
+                                <Activity size={18} />
+                                <span style={{ fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current BMI</span>
+                            </div>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 800, lineHeight: 1 }}>{bmi.value}</div>
+                            <div style={{
+                                padding: '4px 12px',
+                                background: bmi.color,
+                                color: 'white',
+                                borderRadius: '20px',
+                                fontSize: '0.8rem',
+                                fontWeight: 'bold'
+                            }}>
+                                {bmi.category}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {error && (
-                    <div style={{ background: '#fee2e2', color: '#dc2626', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-                    <div className="input-group">
-                        <label className="input-label">Choose Your Avatar</label>
-                        <AvatarPicker
-                            selectedId={formData.avatar_id}
-                            onSelect={(id) => setFormData({ ...formData, avatar_id: id })}
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <label className="input-label">Full Name</label>
-                        <input
-                            name="name"
-                            type="text"
-                            className="input-field"
-                            value={formData.name}
-                            onChange={handleChange}
-                            placeholder="John Doe"
-                            required
-                        />
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <div className="input-group">
-                            <label className="input-label">Gender</label>
-                            <select
-                                name="gender"
-                                className="input-field"
-                                value={formData.gender}
-                                onChange={handleChange}
-                            >
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
+                    {error && (
+                        <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '12px', borderRadius: '12px', marginBottom: '20px' }}>
+                            {error}
                         </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
                         <div className="input-group">
-                            <label className="input-label">Age (Years)</label>
+                            <label className="input-label">Choose Your Avatar</label>
+                            <AvatarPicker
+                                selectedId={formData.avatar_id}
+                                onSelect={(id) => setFormData({ ...formData, avatar_id: id })}
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Full Name</label>
                             <input
-                                name="age"
-                                type="number"
+                                name="name"
+                                type="text"
                                 className="input-field"
-                                value={formData.age}
+                                value={formData.name}
                                 onChange={handleChange}
-                                placeholder="25"
+                                placeholder="John Doe"
                                 required
                             />
                         </div>
-                    </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div className="input-group">
+                                <label className="input-label">Gender</label>
+                                <select
+                                    name="gender"
+                                    className="input-field"
+                                    value={formData.gender}
+                                    onChange={handleChange}
+                                >
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div className="input-group">
+                                <label className="input-label">Age (Years)</label>
+                                <input
+                                    name="age"
+                                    type="number"
+                                    className="input-field"
+                                    value={formData.age}
+                                    onChange={handleChange}
+                                    placeholder="25"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div className="input-group">
+                                <label className="input-label">Height (cm)</label>
+                                <input
+                                    name="height_cm"
+                                    type="number"
+                                    className="input-field"
+                                    value={formData.height_cm}
+                                    onChange={handleChange}
+                                    placeholder="175"
+                                    required
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label className="input-label">Weight (kg)</label>
+                                <input
+                                    name="current_weight"
+                                    type="number"
+                                    step="0.1"
+                                    className="input-field"
+                                    value={formData.current_weight}
+                                    onChange={handleChange}
+                                    placeholder="70.5"
+                                    required
+                                />
+                            </div>
+                        </div>
+
                         <div className="input-group">
-                            <label className="input-label">Height (cm)</label>
+                            <label className="input-label">Phone Number</label>
                             <input
-                                name="height_cm"
-                                type="number"
+                                name="phone"
+                                type="tel"
                                 className="input-field"
-                                value={formData.height_cm}
+                                value={formData.phone}
                                 onChange={handleChange}
-                                placeholder="175"
+                                placeholder="+1 234 567 890"
                                 required
                             />
                         </div>
+
                         <div className="input-group">
-                            <label className="input-label">Weight (kg)</label>
+                            <label className="input-label">Target Weight Goal (kg)</label>
                             <input
-                                name="current_weight"
+                                name="target_weight"
                                 type="number"
                                 step="0.1"
                                 className="input-field"
-                                value={formData.current_weight}
+                                value={formData.target_weight}
                                 onChange={handleChange}
-                                placeholder="70.5"
+                                placeholder="e.g. 75.0"
                                 required
                             />
+                            <p style={{ fontSize: '0.8rem', marginTop: '4px', color: 'var(--text-muted)' }}>
+                                Setting a target helps us track your progress!
+                            </p>
                         </div>
-                    </div>
 
-                    <div className="input-group">
-                        <label className="input-label">Phone Number</label>
-                        <input
-                            name="phone"
-                            type="tel"
-                            className="input-field"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            placeholder="+1 234 567 890"
-                            required
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <label className="input-label">Target Weight Goal (kg)</label>
-                        <input
-                            name="target_weight"
-                            type="number"
-                            step="0.1"
-                            className="input-field"
-                            value={formData.target_weight}
-                            onChange={handleChange}
-                            placeholder="e.g. 75.0"
-                            required
-                        />
-                        <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '4px' }}>
-                            Setting a target helps us track your progress!
-                        </p>
-                    </div>
-
-                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '10px' }}>
-                        Update Profile 🚀
-                    </button>
-                </form>
+                        <button type="submit" className="btn" style={{ marginTop: '20px' }}>
+                            Update Profile 🚀
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

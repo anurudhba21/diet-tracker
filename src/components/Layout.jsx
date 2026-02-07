@@ -21,53 +21,56 @@ export default function Layout({ children }) {
 
     return (
         <>
-            <div className="ambient-orb orb-1" />
-            <div className="ambient-orb orb-2" />
+            <div className="ambient-bg">
+                <div className="orb orb-primary" />
+                <div className="orb orb-accent" />
+            </div>
 
             <div className="container">
-                <header className="app-header" style={{ position: 'relative' }}>
+                <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <div style={{ position: 'relative' }}>
                         <button
                             className="avatar-btn"
                             onClick={() => setShowMenu(!showMenu)}
-                            title="Account Options"
                             style={{
                                 background: avatar.bgColor,
-                                fontSize: '1.25rem',
+                                width: '44px',
+                                height: '44px',
+                                borderRadius: '50%',
+                                border: '2px solid var(--glass-border)',
+                                fontSize: '1.5rem',
+                                cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '40px',
-                                height: '40px',
-                                border: '2px solid var(--color-primary)'
+                                justifyContent: 'center'
                             }}
                         >
                             {avatar.emoji}
                         </button>
 
                         {showMenu && (
-                            <div className="card" style={{
+                            <div className="glass-panel" style={{
                                 position: 'absolute',
                                 top: '120%',
                                 left: 0,
-                                width: '180px',
-                                padding: '8px',
+                                width: '200px',
+                                padding: '12px',
                                 zIndex: 1000,
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: '4px'
+                                gap: '8px'
                             }}>
                                 <button
-                                    className="btn"
+                                    className="btn-ghost"
                                     onClick={() => navigate('/profile')}
-                                    style={{ fontSize: '0.9rem', padding: '8px', background: 'transparent', color: 'var(--color-text)', justifyContent: 'flex-start' }}
+                                    style={{ justifyContent: 'flex-start', width: '100%' }}
                                 >
                                     My Profile
                                 </button>
                                 <button
-                                    className="btn"
+                                    className="btn-ghost"
                                     onClick={handleLogout}
-                                    style={{ fontSize: '0.9rem', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)', justifyContent: 'flex-start' }}
+                                    style={{ color: 'var(--danger)', justifyContent: 'flex-start', width: '100%' }}
                                 >
                                     <LogOut size={16} style={{ marginRight: '8px' }} />
                                     Log Out
@@ -76,21 +79,20 @@ export default function Layout({ children }) {
                         )}
                     </div>
 
-                    <h1 style={{ fontSize: '1.25rem', margin: 0 }}>
+                    <h1 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 800 }} className="text-gradient">
                         {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                     </h1>
 
                     <button
                         onClick={toggleTheme}
-                        className="avatar-btn"
-                        style={{ background: 'transparent', border: '1px solid var(--color-border)' }}
-                        title="Toggle Theme"
+                        className="btn-ghost"
+                        style={{ borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                     >
-                        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                        {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
                     </button>
                 </header>
 
-                <main style={{ paddingBottom: '20px' }}>
+                <main style={{ paddingBottom: '100px' }}>
                     {children}
                 </main>
             </div>
