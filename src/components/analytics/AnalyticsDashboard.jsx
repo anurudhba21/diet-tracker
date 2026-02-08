@@ -223,24 +223,24 @@ export default function AnalyticsDashboard() {
                         exit={{ opacity: 0, x: 10 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                        <motion.div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                             <MetricCard label="Current" value={stats?.current} unit="kg" isPrimary />
                             <MetricCard label="Today's Change" value={dailyProgressData[dailyProgressData.length - 1]?.loss || '--'} unit="kg" color={dailyProgressData[dailyProgressData.length - 1]?.loss > 0 ? 'var(--primary-500)' : 'var(--danger)'} />
                         </motion.div>
 
-                        <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                        <motion.div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
                             <BMICard bmi={bmi} />
                             <StreakCard streaks={streaks} />
                         </motion.div>
 
-                        <motion.div variants={itemVariants} className="glass-panel" style={{ marginBottom: '24px' }}>
+                        <div className="glass-panel" style={{ marginBottom: '24px' }}>
                             <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <TrendingDown className="text-primary" size={20} /> Recent Trend
                             </h3>
                             <div style={{ height: '200px' }}>
                                 <WeightChart data={chartData.slice(-7)} target={goal.targetWeight} />
                             </div>
-                        </motion.div>
+                        </div>
 
                         <motion.button
                             whileHover={{ scale: 1.02 }}
@@ -263,37 +263,37 @@ export default function AnalyticsDashboard() {
                         transition={{ duration: 0.2 }}
                         style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
                     >
-                        <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <MetricCard label="Total Lost" value={stats?.lost} unit="kg" color="var(--primary-600)" />
                             <MetricCard label="Remaining" value={stats?.remaining} unit="kg" color="var(--accent-gold)" />
-                        </motion.div>
+                        </div>
 
-                        <motion.div variants={itemVariants} className="glass-panel">
+                        <div className="glass-panel">
                             <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <TrendingDown className="text-primary" size={24} /> Weight History
                             </h3>
                             <div style={{ height: '300px' }}>
                                 <WeightChart data={chartData} target={goal.targetWeight} />
                             </div>
-                        </motion.div>
+                        </div>
 
-                        <motion.div variants={itemVariants} className="glass-panel">
+                        <div className="glass-panel">
                             <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <ArrowRight className="text-primary" size={24} /> Daily Fluctuations
                             </h3>
                             <div style={{ height: '300px' }}>
                                 <DailyProgressChart data={dailyProgressData} />
                             </div>
-                        </motion.div>
+                        </div>
 
-                        <motion.div variants={itemVariants} className="glass-panel">
+                        <div className="glass-panel">
                             <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <Target className="text-primary" size={24} /> Goal Progress
                             </h3>
                             <div style={{ height: '300px' }}>
                                 <GoalPieChart data={goalPieData} />
                             </div>
-                        </motion.div>
+                        </div>
                     </motion.div>
                 )}
 
