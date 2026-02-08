@@ -12,6 +12,8 @@ import MetricCard from './MetricCard';
 import StreakCard from './StreakCard';
 import HabitStats from './HabitStats';
 import BMICard from './BMICard';
+import CalendarHeatmap from './CalendarHeatmap';
+import AchievementsCard from './AchievementsCard';
 import ExportButton from './ExportButton';
 import { TrendingUp, TrendingDown, PlusCircle, ArrowRight, Target, PieChart as PieChartIcon, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -44,6 +46,7 @@ export default function AnalyticsDashboard() {
     const [streaks, setStreaks] = useState(null);
     const [bmi, setBmi] = useState(null);
     const [habitStats, setHabitStats] = useState(null);
+    const [heatmapEntries, setHeatmapEntries] = useState({});
     const [loading, setLoading] = useState(true);
     const [hasEntries, setHasEntries] = useState(false);
     const navigate = useNavigate();
@@ -97,6 +100,7 @@ export default function AnalyticsDashboard() {
                 setHasEntries(cData.length > 0);
                 setStreaks(analytics.calculateStreaks(entriesMap));
                 setHabitStats(analytics.calculateHabitStats(entriesMap));
+                setHeatmapEntries(entriesMap);
                 if (user.height_cm) {
                     setBmi(analytics.calculateBMI(currentWeight, user.height_cm));
                 }
@@ -259,6 +263,14 @@ export default function AnalyticsDashboard() {
 
             <motion.div variants={itemVariants}>
                 <HabitImpactCard impactData={habitImpact} />
+            </motion.div>
+
+            <motion.div variants={itemVariants} style={{ marginTop: '24px' }}>
+                <AchievementsCard stats={stats} streaks={streaks} />
+            </motion.div>
+
+            <motion.div variants={itemVariants} style={{ marginTop: '24px' }}>
+                <CalendarHeatmap entries={heatmapEntries} />
             </motion.div>
 
             <motion.div variants={itemVariants} style={{ marginTop: '32px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
