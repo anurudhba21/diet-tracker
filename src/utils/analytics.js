@@ -244,6 +244,49 @@ export const analytics = {
         return { current, longest };
     },
 
+    analyzeHabitImpact: (entries) => {
+        const sortedDates = Object.keys(entries).sort((a, b) => new Date(a) - new Date(b));
+        const habitStats = {
+            'Junk Food': { deltas: [], count: 0 },
+            'Buttermilk': { deltas: [], count: 0 },
+            'Omega-3': { deltas: [], count: 0 }
+        };
+
+        for (let i = 0; i < sortedDates.length - 1; i++) {
+            const date = sortedDates[i];
+            const nextDate = sortedDates[i + 1];
+
+            // Ensure next entry is actually the next day (within 24-48 hours)
+            const diffTime = Math.abs(new Date(nextDate) - new Date(date));
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 1) continue; // Skip if gap in data
+
+            const entry = entries[date];
+            const nextEntry = entries[nextDate];
+
+            if (entry.weight && nextEntry.weight) {
+                const delta = parseFloat(nextEntry.weight) - parseFloat(entry.weight);
+                const weightChange = parseFloat(delta.toFixed(2));
+
+                if (entry.junk_flag) habitStats['Junk Food'].deltas.push(weightChange);
+                if (entry.buttermilk_flag) habitStats['Buttermilk'].deltas.push(weightChange);
+                if (entry.omega3_flag) habitStats['Omega-3'].deltas.push(weightChange);
+            }
+        }
+
+        return Object.entries(habitStats)
+            .map(([habit, data]) => {
+                const count = data.deltas.length;
+                if (count === 0) return null;
+                const totalDelta = data.deltas.reduce((a, b) => a + b, 0);
+                const avgImpact = parseFloat((totalDelta / count).toFixed(2));
+                return { habit, avgImpact, count };
+            })
+            .filter(item => item !== null)
+            .sort((a, b) => b.avgImpact - a.avgImpact); // Sort: High Gain -> High Loss
+    },
+
     calculateHabitStats: (entries) => {
         const entryList = Object.values(entries);
         const total = entryList.length;
