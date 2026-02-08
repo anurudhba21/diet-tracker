@@ -6,7 +6,8 @@ import MealInputs from './inputs/MealInputs';
 import HabitToggles from './inputs/HabitToggles';
 import NotesInput from './inputs/NotesInput';
 import confetti from 'canvas-confetti';
-import { CheckCircle, Edit2 } from 'lucide-react';
+import { CheckCircle, Edit2, AlertTriangle } from 'lucide-react';
+import { analytics } from '../utils/analytics';
 
 export default function DailyEntry({ date }) {
     const { dateStr } = useParams();
@@ -37,7 +38,7 @@ export default function DailyEntry({ date }) {
 
     const isToday = selectedDate === todayStr;
 
-    const { entry, updateEntry, saveEntry: saveToStorage, deleteEntry, isSaved, hasExistingData } = useDailyEntry(selectedDate);
+    const { entry, updateEntry, saveEntry: saveToStorage, deleteEntry, isSaved, hasExistingData, previousWeight } = useDailyEntry(selectedDate);
 
     // Default to editing if no data exists
     const [isEditing, setIsEditing] = useState(true);
@@ -56,6 +57,17 @@ export default function DailyEntry({ date }) {
             setIsEditing(true);
         }
     }, [hasExistingData]);
+
+    // Anomaly Detection
+    const [anomaly, setAnomaly] = useState(null);
+    useEffect(() => {
+        if (entry.weight && previousWeight && isEditing) {
+            const result = analytics.detectAnomaly(entry.weight, previousWeight);
+            setAnomaly(result);
+        } else {
+            setAnomaly(null);
+        }
+    }, [entry.weight, previousWeight, isEditing]);
 
     const handleMealChange = (id, value) => {
         updateEntry({ [id]: value });
@@ -215,6 +227,30 @@ export default function DailyEntry({ date }) {
                 }}
                 hasError={!!errors.weight}
             />
+
+            {anomaly && (
+                <div style={{
+                    marginTop: '12px',
+                    marginBottom: '24px',
+                    padding: '12px',
+                    background: anomaly.severity === 'high' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                    border: `1px solid ${anomaly.severity === 'high' ? '#ef4444' : '#f59e0b'}`,
+                    borderRadius: '12px',
+                    color: anomaly.severity === 'high' ? '#fca5a5' : '#fcd34d',
+                    display: 'flex',
+                    alignItems: 'start',
+                    gap: '12px',
+                    animation: 'fadeIn 0.3s ease'
+                }}>
+                    <AlertTriangle size={20} style={{ minWidth: '20px', marginTop: '2px' }} />
+                    <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
+                            {anomaly.type === 'Sanity' ? 'Wait, is this right?' : 'Unusual Fluctuation'}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>{anomaly.message}</div>
+                    </div>
+                </div>
+            )}
 
             <MealInputs
                 data={entry}

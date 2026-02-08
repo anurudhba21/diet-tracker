@@ -15,6 +15,9 @@ import TermsOfService from './components/legal/TermsOfService'
 import NavButton from './components/NavButton'
 import PageTransition from './components/PageTransition'
 import { Book, LayoutDashboard, PlusCircle } from 'lucide-react'
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { App as CapacitorApp } from '@capacitor/app';
 
 // Wrapper to ensure we have a user (which AuthContext guarantees after loading)
 function RequireUser({ children }) {
@@ -60,6 +63,28 @@ function RequireUser({ children }) {
 
 function AppContent() {
     const location = useLocation();
+
+    useEffect(() => {
+        const initNative = async () => {
+            if (Capacitor.isNativePlatform()) {
+                try {
+                    await StatusBar.setStyle({ style: Style.Dark });
+                    await StatusBar.setOverlaysWebView({ overlay: true });
+                } catch (e) {
+                    console.warn('Status bar not available', e);
+                }
+
+                CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+                    if (!canGoBack) {
+                        CapacitorApp.minimizeApp();
+                    } else {
+                        window.history.back();
+                    }
+                });
+            }
+        };
+        initNative();
+    }, []);
 
     return (
         <RequireUser>

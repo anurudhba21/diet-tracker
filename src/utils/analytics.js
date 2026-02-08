@@ -302,5 +302,49 @@ export const analytics = {
             buttermilk: Math.round((buttermilkCount / total) * 100),
             omega3: Math.round((omega3Count / total) * 100)
         };
+    },
+
+    detectAnomaly: (currentWeight, previousWeight) => {
+        if (!currentWeight || !previousWeight) return null;
+
+        const curr = parseFloat(currentWeight);
+        const prev = parseFloat(previousWeight);
+
+        if (isNaN(curr) || isNaN(prev)) return null;
+
+        const delta = curr - prev;
+
+        // thresholds
+        const GAIN_THRESHOLD = 2.0; // kg
+        const LOSS_THRESHOLD = -1.5; // kg
+
+        if (curr > 300 || curr < 30) {
+            return {
+                isAnomaly: true,
+                type: 'Sanity',
+                severity: 'high',
+                message: `Are you sure? ${curr}kg seems physically unlikely.`
+            };
+        }
+
+        if (delta > GAIN_THRESHOLD) {
+            return {
+                isAnomaly: true,
+                type: 'Gain',
+                severity: 'medium',
+                message: `High Gain (+${delta.toFixed(1)}kg). Likely water retention or inflammation.`
+            };
+        }
+
+        if (delta < LOSS_THRESHOLD) {
+            return {
+                isAnomaly: true,
+                type: 'Loss',
+                severity: 'medium',
+                message: `Rapid Loss (${delta.toFixed(1)}kg). Could be dehydration or a typo.`
+            };
+        }
+
+        return null;
     }
 };

@@ -33,6 +33,7 @@ export function useDailyEntry(dateStr) {
 
     const [entry, setEntry] = useState(INITIAL_STATE);
     const [hasExistingData, setHasExistingData] = useState(false);
+    const [previousWeight, setPreviousWeight] = useState(null);
     const [isSaved, setIsSaved] = useState(false);
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
 
@@ -54,7 +55,12 @@ export function useDailyEntry(dateStr) {
                 }
 
                 // The API returns an array, we need to find the specific date
-                const saved = allEntries.find(e => e.date === targetDate);
+                const sortedEntries = allEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const saved = sortedEntries.find(e => e.date === targetDate);
+
+                // Find previous weight for anomaly detection
+                const prev = sortedEntries.find(e => new Date(e.date) < new Date(targetDate) && e.weight);
+                setPreviousWeight(prev ? prev.weight : null);
 
                 if (saved) {
                     setHasExistingData(true);
@@ -170,6 +176,8 @@ export function useDailyEntry(dateStr) {
         saveEntry,
         deleteEntry,
         isSaved,
-        hasExistingData
+        isSaved,
+        hasExistingData,
+        previousWeight
     };
 }
