@@ -12,7 +12,7 @@ import MetricCard from './MetricCard';
 import StreakCard from './StreakCard';
 import HabitStats from './HabitStats';
 import ExportButton from './ExportButton';
-import { TrendingUp, PlusCircle, ArrowRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, PlusCircle, ArrowRight, Target, PieChart as PieChartIcon, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -164,7 +164,7 @@ export default function AnalyticsDashboard() {
 
                 <div className="glass-panel" style={{ opacity: 0.6, pointerEvents: 'none', filter: 'grayscale(100%)' }}>
                     <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Weight Trend <span style={{ fontSize: '0.7rem', background: 'var(--glass-border)', padding: '2px 8px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>LOCKED</span>
+                        <TrendingUp size={20} /> Weight Trend <span style={{ fontSize: '0.7rem', background: 'var(--glass-border)', padding: '2px 8px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '4px' }}><Lock size={10} /> LOCKED</span>
                     </h3>
                     <div style={{ height: '200px', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--glass-border)' }}>
                         <p className="text-muted" style={{ fontSize: '0.9rem' }}>Chart unlocks after 2 entries</p>
@@ -222,21 +222,26 @@ export default function AnalyticsDashboard() {
                 </motion.div>
             </motion.div>
 
-            {/* Charts Section - Replicating Excel Dashboard */}
             <div style={{ display: 'grid', gap: '24px', marginBottom: '24px' }}>
                 <motion.div variants={itemVariants} className="glass-panel">
-                    <h3 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Morning Weight vs Date</h3>
+                    <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <TrendingDown className="text-primary" size={24} /> Morning Weight vs Date
+                    </h3>
                     <WeightChart data={chartData} target={goal.targetWeight} />
                 </motion.div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
                     <motion.div variants={itemVariants} className="glass-panel">
-                        <h3 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Daily Progress (kg lost)</h3>
+                        <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <ArrowRight className="text-primary" size={24} /> Daily Progress <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>(kg)</span>
+                        </h3>
                         <DailyProgressChart data={dailyProgressData} />
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="glass-panel">
-                        <h3 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Goal Completion</h3>
+                        <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Target className="text-primary" size={24} /> Goal Completion
+                        </h3>
                         <GoalPieChart data={goalPieData} />
                     </motion.div>
                 </div>

@@ -1,5 +1,19 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="glass-panel" style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15, 23, 42, 0.9)' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '4px' }}>{payload[0].name}</p>
+                <p style={{ color: payload[0].payload.fill, fontWeight: 'bold', fontSize: '1.25rem', margin: 0 }}>
+                    {payload[0].value}%
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
+
 export default function GoalPieChart({ data }) {
     if (!data || data.length === 0) {
         return (
@@ -29,14 +43,7 @@ export default function GoalPieChart({ data }) {
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
-                    <Tooltip
-                        contentStyle={{
-                            background: 'rgba(15, 23, 42, 0.9)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '8px',
-                            color: '#f8fafc'
-                        }}
-                    />
+                    <Tooltip content={<CustomTooltip />} />
                     <Legend verticalAlign="bottom" height={36} />
                     <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#f8fafc" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
                         {data[0].value}%

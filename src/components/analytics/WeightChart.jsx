@@ -1,5 +1,19 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
+const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="glass-panel" style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15, 23, 42, 0.9)' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '4px' }}>{label}</p>
+                <p style={{ color: 'var(--primary-500)', fontWeight: 'bold', fontSize: '1.1rem', margin: 0 }}>
+                    {payload[0].value} <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 'normal' }}>kg</span>
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
+
 export default function WeightChart({ data, target }) {
     if (!data || data.length === 0) {
         return (
@@ -37,17 +51,7 @@ export default function WeightChart({ data, target }) {
                         tickLine={false}
                         width={35}
                     />
-                    <Tooltip
-                        contentStyle={{
-                            background: 'rgba(15, 23, 42, 0.9)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-                            color: '#f8fafc'
-                        }}
-                        itemStyle={{ color: '#f8fafc' }}
-                        labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
-                    />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 2 }} />
                     {target && (
                         <ReferenceLine y={target} stroke="#3b82f6" strokeDasharray="3 3" label={{ position: 'right', value: 'Goal', fill: '#3b82f6', fontSize: 10 }} />
                     )}
