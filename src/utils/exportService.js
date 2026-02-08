@@ -27,21 +27,35 @@ export const exportService = {
         // 2. Prepare Goal Progress Data
         let goalRows = [];
         if (goal && entries) {
-            // Find latest weight
-            const latestDate = sortedDates.find(d => entries[d].weight);
-            const currentWeight = latestDate ? entries[latestDate].weight : 0;
+            // Sort dates ascending for progress tracking
+            const ascDates = [...sortedDates].reverse();
+            const startWeight = parseFloat(goal.startWeight);
+            const targetWeight = parseFloat(goal.targetWeight);
 
-            const stats = analytics.calculateProgress(goal, currentWeight);
+            goalRows = ascDates.map((date, index) => {
+                const entry = entries[date];
+                const currentWeight = parseFloat(entry.weight);
 
-            goalRows = [{
-                Start_Weight_kg: goal.startWeight,
-                Target_Weight_kg: goal.targetWeight,
-                Current_Weight_kg: currentWeight || '-',
-                Weight_Lost_kg: stats ? stats.lost : '-',
-                Remaining_kg: stats ? stats.remaining : '-',
-                Progress_Percent: stats ? `${stats.percent}%` : '-',
-                Goal_Last_Updated: new Date(goal.updatedAt).toLocaleDateString()
-            }];
+                // Skip entries without weight for goal progress? 
+                // Or include them with dashes? usually progress implies weight check.
+                // Let's include them but show '-' if weight is missing, 
+                // but calculations require weight. 
+
+                if (isNaN(currentWeight)) return null;
+
+                const stats = analytics.calculateProgress(goal, currentWeight);
+
+                return {
+                    Date: date,
+                    "Streak Day": `Day ${index + 1}`,
+                    "Morning Weight": currentWeight,
+                    "Weight Lost": stats ? stats.lost : '-',
+                    "Weight Remaining": stats ? stats.remaining : '-',
+                    "% Goal Completed": stats ? `${stats.percent}%` : '-',
+                    "Starting Weight": startWeight,
+                    "Goal Weight": targetWeight
+                };
+            }).filter(row => row !== null); // Remove entries with no weight
         }
         const worksheet2 = XLSX.utils.json_to_sheet(goalRows);
 
