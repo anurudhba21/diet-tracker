@@ -6,6 +6,7 @@ import GoalSetup from './GoalSetup';
 import WeightChart from './WeightChart';
 import DailyProgressChart from './DailyProgressChart';
 import GoalPieChart from './GoalPieChart';
+import PredictionCard from './PredictionCard';
 import MetricCard from './MetricCard';
 import StreakCard from './StreakCard';
 import HabitStats from './HabitStats';
@@ -36,6 +37,7 @@ export default function AnalyticsDashboard() {
     const [chartData, setChartData] = useState([]);
     const [dailyProgressData, setDailyProgressData] = useState([]);
     const [goalPieData, setGoalPieData] = useState([]);
+    const [prediction, setPrediction] = useState(null);
     const [streaks, setStreaks] = useState(null);
     const [habitStats, setHabitStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -82,6 +84,9 @@ export default function AnalyticsDashboard() {
 
                 const pieData = analytics.prepareGoalPieData(savedGoal, currentWeight);
                 setGoalPieData(pieData);
+
+                const pred = analytics.predictGoalDate(entriesMap, savedGoal);
+                setPrediction(pred);
 
                 setHasEntries(cData.length > 0);
                 setStreaks(analytics.calculateStreaks(entriesMap));
@@ -183,6 +188,10 @@ export default function AnalyticsDashboard() {
             initial="hidden"
             animate="show"
         >
+            <motion.div variants={itemVariants} style={{ marginBottom: '16px' }}>
+                <PredictionCard prediction={prediction} />
+            </motion.div>
+
             <motion.div variants={itemVariants}>
                 <StreakCard streaks={streaks} />
             </motion.div>
