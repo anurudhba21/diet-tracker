@@ -272,21 +272,27 @@ export default function AnalyticsDashboard() {
                             <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <TrendingDown className="text-primary" size={24} /> Weight History
                             </h3>
-                            <WeightChart data={chartData} target={goal.targetWeight} />
+                            <div style={{ height: '300px' }}>
+                                <WeightChart data={chartData} target={goal.targetWeight} />
+                            </div>
                         </motion.div>
 
                         <motion.div variants={itemVariants} className="glass-panel">
                             <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <ArrowRight className="text-primary" size={24} /> Daily Fluctuations
                             </h3>
-                            <DailyProgressChart data={dailyProgressData} />
+                            <div style={{ height: '300px' }}>
+                                <DailyProgressChart data={dailyProgressData} />
+                            </div>
                         </motion.div>
 
                         <motion.div variants={itemVariants} className="glass-panel">
                             <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <Target className="text-primary" size={24} /> Goal Progress
                             </h3>
-                            <GoalPieChart data={goalPieData} />
+                            <div style={{ height: '300px' }}>
+                                <GoalPieChart data={goalPieData} />
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}
