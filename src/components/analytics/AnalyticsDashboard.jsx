@@ -11,6 +11,7 @@ import HabitImpactCard from './HabitImpactCard';
 import MetricCard from './MetricCard';
 import StreakCard from './StreakCard';
 import HabitStats from './HabitStats';
+import BMICard from './BMICard';
 import ExportButton from './ExportButton';
 import { TrendingUp, TrendingDown, PlusCircle, ArrowRight, Target, PieChart as PieChartIcon, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +42,7 @@ export default function AnalyticsDashboard() {
     const [prediction, setPrediction] = useState(null);
     const [habitImpact, setHabitImpact] = useState(null);
     const [streaks, setStreaks] = useState(null);
+    const [bmi, setBmi] = useState(null);
     const [habitStats, setHabitStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [hasEntries, setHasEntries] = useState(false);
@@ -95,6 +97,9 @@ export default function AnalyticsDashboard() {
                 setHasEntries(cData.length > 0);
                 setStreaks(analytics.calculateStreaks(entriesMap));
                 setHabitStats(analytics.calculateHabitStats(entriesMap));
+                if (user.height_cm) {
+                    setBmi(analytics.calculateBMI(currentWeight, user.height_cm));
+                }
             } else {
                 setHasEntries(false);
             }
@@ -196,8 +201,9 @@ export default function AnalyticsDashboard() {
                 <PredictionCard prediction={prediction} />
             </motion.div>
 
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                 <StreakCard streaks={streaks} />
+                <BMICard bmi={bmi} />
             </motion.div>
 
             <motion.div
