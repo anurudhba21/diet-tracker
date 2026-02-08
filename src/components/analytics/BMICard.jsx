@@ -8,7 +8,7 @@ export default function BMICard({ bmi }) {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: `linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.4) 100%)`,
+            background: `linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.0) 100%)`,
             borderLeft: `4px solid ${bmi.color}`
         }}>
             <div>
