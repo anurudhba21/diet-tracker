@@ -26,8 +26,8 @@ export default function GoalPieChart({ data }) {
     const COLORS = ['#3b82f6', '#ef4444']; // Blue for Completed, Red for Remaining
 
     return (
-        <div style={{ height: '250px', width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
+        <div style={{ height: '100%', width: '100%' }}>
+            <ResponsiveContainer width="99%" height="100%">
                 <PieChart>
                     <Pie
                         data={data}

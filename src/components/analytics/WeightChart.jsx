@@ -32,8 +32,8 @@ export default function WeightChart({ data, target }) {
     const max = Math.max(...weights, target || 0) + 2;
 
     return (
-        <div style={{ height: '300px', width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
+        <div style={{ height: '100%', width: '100%' }}>
+            <ResponsiveContainer width="99%" height="100%">
                 <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
                     <XAxis

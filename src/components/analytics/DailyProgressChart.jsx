@@ -29,8 +29,8 @@ export default function DailyProgressChart({ data }) {
     }
 
     return (
-        <div style={{ height: '250px', width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
+        <div style={{ height: '100%', width: '100%' }}>
+            <ResponsiveContainer width="99%" height="100%">
                 <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <XAxis
                         dataKey="day"
