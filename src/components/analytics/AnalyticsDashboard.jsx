@@ -4,6 +4,8 @@ import { api } from '../../utils/api';
 import { analytics } from '../../utils/analytics';
 import GoalSetup from './GoalSetup';
 import WeightChart from './WeightChart';
+import DailyProgressChart from './DailyProgressChart';
+import GoalPieChart from './GoalPieChart';
 import MetricCard from './MetricCard';
 import StreakCard from './StreakCard';
 import HabitStats from './HabitStats';
@@ -32,6 +34,8 @@ export default function AnalyticsDashboard() {
     const [goal, setGoal] = useState(null);
     const [stats, setStats] = useState(null);
     const [chartData, setChartData] = useState([]);
+    const [dailyProgressData, setDailyProgressData] = useState([]);
+    const [goalPieData, setGoalPieData] = useState([]);
     const [streaks, setStreaks] = useState(null);
     const [habitStats, setHabitStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -60,7 +64,10 @@ export default function AnalyticsDashboard() {
 
             setGoal(savedGoal);
 
-            const latestEntry = entriesArray.find(e => e.weight) || {};
+            // Find latest entry with weight
+            // entriesArray is not guaranteed sorted here, so let's sort first to find latest
+            const sortedEntries = entriesArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const latestEntry = sortedEntries.find(e => e.weight) || {};
             const currentWeight = latestEntry.weight;
 
             if (savedGoal && entriesArray.length > 0) {
@@ -69,6 +76,12 @@ export default function AnalyticsDashboard() {
 
                 const cData = analytics.prepareChartData(entriesMap, savedGoal);
                 setChartData(cData);
+
+                const dpData = analytics.prepareDailyProgressData(entriesMap, savedGoal);
+                setDailyProgressData(dpData);
+
+                const pieData = analytics.prepareGoalPieData(savedGoal, currentWeight);
+                setGoalPieData(pieData);
 
                 setHasEntries(cData.length > 0);
                 setStreaks(analytics.calculateStreaks(entriesMap));
@@ -196,14 +209,25 @@ export default function AnalyticsDashboard() {
                 </motion.div>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="glass-panel">
-                <h3 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Weight Trend</h3>
-                <WeightChart data={chartData} target={goal.targetWeight} />
-            </motion.div>
+            {/* Charts Section - Replicating Excel Dashboard */}
+            <div style={{ display: 'grid', gap: '24px', marginBottom: '24px' }}>
+                <motion.div variants={itemVariants} className="glass-panel">
+                    <h3 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Morning Weight vs Date</h3>
+                    <WeightChart data={chartData} target={goal.targetWeight} />
+                </motion.div>
 
-            <motion.div variants={itemVariants} style={{ marginTop: '24px' }}>
-                <MetricCard label="Total Progress" value={stats?.percent} unit="%" fullWidth />
-            </motion.div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+                    <motion.div variants={itemVariants} className="glass-panel">
+                        <h3 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Daily Progress (kg lost)</h3>
+                        <DailyProgressChart data={dailyProgressData} />
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="glass-panel">
+                        <h3 style={{ marginBottom: '20px', fontSize: '1.25rem' }}>Goal Completion</h3>
+                        <GoalPieChart data={goalPieData} />
+                    </motion.div>
+                </div>
+            </div>
 
             <motion.div variants={itemVariants} style={{ marginTop: '24px' }}>
                 <HabitStats stats={habitStats} />

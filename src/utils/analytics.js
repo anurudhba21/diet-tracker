@@ -76,6 +76,43 @@ export const analytics = {
         return data;
     },
 
+    prepareDailyProgressData: (entries, goal) => {
+        if (!goal) return [];
+        const start = parseFloat(goal.startWeight);
+        if (isNaN(start)) return [];
+
+        return Object.keys(entries)
+            .sort((a, b) => new Date(a) - new Date(b))
+            .map((date, index) => {
+                const entry = entries[date];
+                const weight = parseFloat(entry.weight);
+                if (isNaN(weight)) return null;
+
+                const loss = start - weight;
+                return {
+                    day: `Day ${index + 1}`,
+                    loss: parseFloat(loss.toFixed(2)),
+                    weight // Keep weight for tooltip if needed
+                };
+            })
+            .filter(item => item !== null);
+    },
+
+    prepareGoalPieData: (goal, currentWeight) => {
+        if (!goal || !currentWeight) return [];
+
+        const stats = analytics.calculateProgress(goal, currentWeight);
+        if (!stats) return [];
+
+        const percent = parseFloat(stats.percent);
+        const remaining = 100 - percent;
+
+        return [
+            { name: 'Completed', value: percent },
+            { name: 'Remaining', value: remaining < 0 ? 0 : remaining } // Don't show negative remaining
+        ];
+    },
+
     calculateStreaks: (entries) => {
         const dates = Object.keys(entries)
             .sort((a, b) => new Date(b) - new Date(a)); // Newest first
