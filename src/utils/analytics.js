@@ -246,11 +246,7 @@ export const analytics = {
 
     analyzeHabitImpact: (entries) => {
         const sortedDates = Object.keys(entries).sort((a, b) => new Date(a) - new Date(b));
-        const habitStats = {
-            'Junk Food': { deltas: [], count: 0 },
-            'Buttermilk': { deltas: [], count: 0 },
-            'Omega-3': { deltas: [], count: 0 }
-        };
+        const habitStats = {};
 
         for (let i = 0; i < sortedDates.length - 1; i++) {
             const date = sortedDates[i];
@@ -269,9 +265,25 @@ export const analytics = {
                 const delta = parseFloat(nextEntry.weight) - parseFloat(entry.weight);
                 const weightChange = parseFloat(delta.toFixed(2));
 
-                if (entry.junk_flag) habitStats['Junk Food'].deltas.push(weightChange);
-                if (entry.buttermilk_flag) habitStats['Buttermilk'].deltas.push(weightChange);
-                if (entry.omega3_flag) habitStats['Omega-3'].deltas.push(weightChange);
+                const habits = entry.habits || {};
+
+                // Track Custom Habits
+                Object.keys(habits).forEach(habitName => {
+                    if (habits[habitName]) {
+                        if (!habitStats[habitName]) {
+                            habitStats[habitName] = { deltas: [], count: 0 };
+                        }
+                        habitStats[habitName].deltas.push(weightChange);
+                    }
+                });
+
+                // Track Junk Food (Core Metric)
+                if (entry.junk) {
+                    if (!habitStats['Junk Food']) {
+                        habitStats['Junk Food'] = { deltas: [], count: 0 };
+                    }
+                    habitStats['Junk Food'].deltas.push(weightChange);
+                }
             }
         }
 
@@ -290,18 +302,29 @@ export const analytics = {
     calculateHabitStats: (entries) => {
         const entryList = Object.values(entries);
         const total = entryList.length;
-        if (total === 0) return { junk: 0, buttermilk: 0, omega3: 0 };
+        if (total === 0) return {};
 
-        const junkCount = entryList.filter(e => e.junk_flag).length;
-        const buttermilkCount = entryList.filter(e => e.buttermilk_flag).length;
-        const omega3Count = entryList.filter(e => e.omega3_flag).length;
+        const counts = {};
+        entryList.forEach(e => {
+            const habits = e.habits || {};
+            Object.keys(habits).forEach(h => {
+                if (habits[h]) {
+                    counts[h] = (counts[h] || 0) + 1;
+                }
+            });
 
-        return {
-            total,
-            junk: Math.round((junkCount / total) * 100),
-            buttermilk: Math.round((buttermilkCount / total) * 100),
-            omega3: Math.round((omega3Count / total) * 100)
-        };
+            // Track Junk Food (Core Metric)
+            if (e.junk) {
+                counts['Junk Food'] = (counts['Junk Food'] || 0) + 1;
+            }
+        });
+
+        const stats = { total };
+        Object.keys(counts).forEach(h => {
+            stats[h] = Math.round((counts[h] / total) * 100);
+        });
+
+        return stats;
     },
 
     detectAnomaly: (currentWeight, previousWeight) => {

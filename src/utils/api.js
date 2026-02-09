@@ -167,5 +167,33 @@ export const api = {
         return await response.json();
     },
 
+    // Habits
+    getHabits: async (userId) => {
+        const response = await fetch(`${API_URL}/habits?userId=${userId}`, { credentials: 'include' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        return data;
+    },
+
+    saveHabit: async (habitData) => {
+        const response = await fetch(`${API_URL}/habits`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(habitData),
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to save habit');
+        return await response.json();
+    },
+
+    deleteHabit: async (id) => {
+        const response = await fetch(`${API_URL}/habits/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to delete habit');
+        return await response.json();
+    },
+
 
 };

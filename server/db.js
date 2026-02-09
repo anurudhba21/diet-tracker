@@ -38,9 +38,11 @@ if (DB_MODE === 'cloud') {
         sqliteDb.run(`ALTER TABLE users ADD COLUMN dob TEXT`, () => { });
         sqliteDb.run(`ALTER TABLE users ADD COLUMN gender TEXT`, () => { });
         sqliteDb.run(`ALTER TABLE users ADD COLUMN avatar_id TEXT`, () => { });
-        sqliteDb.run(`CREATE TABLE IF NOT EXISTS daily_entries (id TEXT PRIMARY KEY, user_id TEXT, date TEXT, weight REAL, notes TEXT, UNIQUE(user_id, date))`);
+        sqliteDb.run(`CREATE TABLE IF NOT EXISTS daily_entries (id TEXT PRIMARY KEY, user_id TEXT, date TEXT, weight REAL, notes TEXT, junk INTEGER DEFAULT 0, UNIQUE(user_id, date))`);
+        sqliteDb.run(`ALTER TABLE daily_entries ADD COLUMN junk INTEGER DEFAULT 0`, () => { });
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS meals (id TEXT PRIMARY KEY, entry_id TEXT, type TEXT, content TEXT)`);
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS habits (id TEXT PRIMARY KEY, entry_id TEXT, habit_name TEXT, completed INTEGER)`);
+        sqliteDb.run(`CREATE TABLE IF NOT EXISTS user_habits (id TEXT PRIMARY KEY, user_id TEXT, name TEXT, time_of_day TEXT, active INTEGER)`);
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS goals (user_id TEXT PRIMARY KEY, start_weight REAL, target_weight REAL, start_date TEXT)`);
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS otps (phone TEXT PRIMARY KEY, code TEXT, expires_at INTEGER)`);
     });
@@ -137,18 +139,28 @@ const db = {
                 date: de.date,
                 weight: de.weight,
                 notes: de.notes,
+                junk: de.junk, // Ensure junk is returned
                 meals: de.meals.reduce((acc, m) => ({ ...acc, [m.type]: m.content }), {}),
                 habits: de.habits.reduce((acc, h) => ({ ...acc, [h.habit_name]: h.completed }), {})
             }));
         } else {
             return new Promise((resolve, reject) => {
-                const sql = `SELECT de.id as entry_id, de.date, de.weight, de.notes, m.type as meal_type, m.content as meal_content, h.habit_name, h.completed as habit_completed FROM daily_entries de LEFT JOIN meals m ON de.id = m.entry_id LEFT JOIN habits h ON de.id = h.entry_id WHERE de.user_id = ?`;
+                // Select junk column
+                const sql = `SELECT de.id as entry_id, de.date, de.weight, de.notes, de.junk, m.type as meal_type, m.content as meal_content, h.habit_name, h.completed as habit_completed FROM daily_entries de LEFT JOIN meals m ON de.id = m.entry_id LEFT JOIN habits h ON de.id = h.entry_id WHERE de.user_id = ?`;
                 sqliteDb.all(sql, [userId], (err, rows) => {
                     if (err) return reject(err);
                     const entries = {};
                     rows.forEach(row => {
                         if (!entries[row.date]) {
-                            entries[row.date] = { id: row.entry_id, date: row.date, weight: row.weight, notes: row.notes, meals: {}, habits: {} };
+                            entries[row.date] = {
+                                id: row.entry_id,
+                                date: row.date,
+                                weight: row.weight,
+                                notes: row.notes,
+                                junk: !!row.junk, // Convert to boolean
+                                meals: {},
+                                habits: {}
+                            };
                         }
                         if (row.meal_type) entries[row.date].meals[row.meal_type] = row.meal_content;
                         if (row.habit_name) entries[row.date].habits[row.habit_name] = !!row.habit_completed;
@@ -160,13 +172,15 @@ const db = {
     },
 
     async saveEntry(entry) {
-        const { userId, date, weight, notes, meals, habits } = entry;
+        const { userId, date, weight, notes, meals, habits, junk } = entry;
+        const junkVal = junk ? 1 : 0; // Standardize for DB
+
         if (DB_MODE === 'cloud') {
             // First check if entry exists to get ID for upsert
             const { data: existing } = await supabase.from('daily_entries').select('id').eq('user_id', userId).eq('date', date).single();
             const id = existing?.id || crypto.randomUUID();
 
-            const { data: de, error } = await supabase.from('daily_entries').upsert({ id, user_id: userId, date, weight, notes }).select().single();
+            const { data: de, error } = await supabase.from('daily_entries').upsert({ id, user_id: userId, date, weight, notes, junk: junkVal }).select().single();
             if (error) throw error;
 
             await supabase.from('meals').delete().eq('entry_id', de.id);
@@ -187,8 +201,8 @@ const db = {
                     sqliteDb.get(`SELECT id FROM daily_entries WHERE user_id = ? AND date = ?`, [userId, date], (err, row) => {
                         if (err) return reject(err);
                         const id = row ? row.id : crypto.randomUUID();
-                        if (!row) sqliteDb.run(`INSERT INTO daily_entries (id, user_id, date, weight, notes) VALUES (?, ?, ?, ?, ?)`, [id, userId, date, weight, notes]);
-                        else sqliteDb.run(`UPDATE daily_entries SET weight = ?, notes = ? WHERE id = ?`, [weight, notes, id]);
+                        if (!row) sqliteDb.run(`INSERT INTO daily_entries (id, user_id, date, weight, notes, junk) VALUES (?, ?, ?, ?, ?, ?)`, [id, userId, date, weight, notes, junkVal]);
+                        else sqliteDb.run(`UPDATE daily_entries SET weight = ?, notes = ?, junk = ? WHERE id = ?`, [weight, notes, junkVal, id]);
 
                         sqliteDb.run(`DELETE FROM meals WHERE entry_id = ?`, [id], () => {
                             if (meals) {
@@ -226,6 +240,59 @@ const db = {
                         if (err) reject(err);
                         else resolve(true);
                     });
+                });
+            });
+        }
+    },
+
+    // --- User Habits ---
+    async getUserHabits(userId) {
+        if (DB_MODE === 'cloud') {
+            const { data, error } = await supabase.from('user_habits').select('*').eq('user_id', userId);
+            if (error) throw error;
+            return data;
+        } else {
+            return new Promise((resolve, reject) => {
+                sqliteDb.all(`SELECT * FROM user_habits WHERE user_id = ?`, [userId], (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                });
+            });
+        }
+    },
+
+    async saveUserHabit(habit) {
+        // habit: { id, userId, name, timeOfDay, active }
+        const { id, userId, name, timeOfDay, active } = habit;
+        if (DB_MODE === 'cloud') {
+            const { error } = await supabase.from('user_habits').upsert({ id, user_id: userId, name, time_of_day: timeOfDay, active });
+            if (error) throw error;
+            return { id };
+        } else {
+            return new Promise((resolve, reject) => {
+                const newId = id || crypto.randomUUID();
+                const isActive = active === undefined ? 1 : (active ? 1 : 0);
+                sqliteDb.run(`INSERT OR REPLACE INTO user_habits (id, user_id, name, time_of_day, active) VALUES (?, ?, ?, ?, ?)`,
+                    [newId, userId, name, timeOfDay, isActive],
+                    (err) => {
+                        if (err) reject(err);
+                        else resolve({ id: newId });
+                    }
+                );
+            });
+        }
+    },
+
+    async deleteUserHabit(id) {
+        if (DB_MODE === 'cloud') {
+            const { error } = await supabase.from('user_habits').delete().eq('id', id);
+            if (error) throw error;
+            return true;
+        } else {
+            return new Promise((resolve, reject) => {
+                sqliteDb.run(`DELETE FROM user_habits WHERE id = ?`, [id], (err) => {
+                    if (err) reject(err);
+                    else resolve(true);
                 });
             });
         }

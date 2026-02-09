@@ -68,9 +68,9 @@ export default function History() {
             >
                 <AnimatePresence mode="popLayout">
                     {entries.map((item) => {
-                        const habitCount = Object.keys(item.habits || {}).filter(k => k !== 'Junk Food' && item.habits[k]).length;
-                        const isJunk = item.habits && item.habits['Junk Food']; // Legacy check
-                        const junkFlag = item.junk_flag; // New flag
+                        const habits = item.habits || {};
+                        const habitCount = Object.keys(habits).filter(k => k !== 'Junk Food' && habits[k]).length;
+                        const isJunk = habits['Junk Food'];
 
                         return (
                             <motion.div
@@ -87,7 +87,7 @@ export default function History() {
                                     justifyContent: 'space-between',
                                     cursor: 'pointer',
                                     transition: 'border-color 0.2s ease', // Only animate non-layout props with CSS
-                                    borderLeft: `4px solid ${junkFlag ? 'var(--danger)' : 'var(--primary-500)'}`
+                                    borderLeft: `4px solid ${isJunk ? 'var(--danger)' : 'var(--primary-500)'}`
                                 }}
                                 whileHover={{ scale: 1.02, backgroundColor: 'rgba(15, 23, 42, 0.75)' }}
                                 whileTap={{ scale: 0.98 }}
@@ -112,11 +112,11 @@ export default function History() {
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            Drafts: <strong style={{ color: 'var(--text-main)' }}>{habitCount}/2</strong>
+                                            Habits: <strong style={{ color: 'var(--text-main)' }}>{habitCount}</strong>
                                         </span>
                                         <span style={{ width: '4px', height: '4px', background: 'currentColor', borderRadius: '50%' }} />
                                         <span>
-                                            {junkFlag ? <span style={{ color: '#f87171' }}>Junk 🍔</span> : <span style={{ color: '#34d399' }}>Clean 🥗</span>}
+                                            {isJunk ? <span style={{ color: '#f87171' }}>Junk 🍔</span> : <span style={{ color: '#34d399' }}>Clean 🥗</span>}
                                         </span>
                                     </div>
                                 </div>

@@ -254,6 +254,41 @@ app.post('/api/goal', authenticate, async (req, res) => {
     }
 });
 
+// --- Habit Routes ---
+
+app.get('/api/habits', authenticate, async (req, res) => {
+    const { userId } = req.query;
+    if (req.user.id !== userId) return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        const habits = await db.getUserHabits(userId);
+        res.json(habits);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/habits', authenticate, async (req, res) => {
+    if (req.user.id !== req.body.userId) return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        const result = await db.saveUserHabit(req.body);
+        res.json({ success: true, id: result.id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/habits/:id', authenticate, async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.deleteUserHabit(id);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
     app.listen(PORT, '0.0.0.0', () => {

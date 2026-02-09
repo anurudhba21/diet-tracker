@@ -136,7 +136,7 @@ export default function DailyEntry({ date }) {
                         <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
                             <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '4px' }}>Habits</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                                {['buttermilk_flag', 'omega3_flag'].filter(k => entry[k]).length}/2
+                                {entry.habits ? Object.values(entry.habits).filter(Boolean).length : 0}
                             </div>
                         </div>
                     </div>
@@ -149,12 +149,12 @@ export default function DailyEntry({ date }) {
                         gap: '12px',
                         padding: '16px',
                         borderRadius: '16px',
-                        background: entry.junk_flag ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                        border: `1px solid ${entry.junk_flag ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
+                        background: (entry.habits && entry.habits['Junk Food']) ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                        border: `1px solid ${(entry.habits && entry.habits['Junk Food']) ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
                     }}>
-                        <span style={{ fontSize: '1.5rem' }}>{entry.junk_flag ? '🍔' : '🥗'}</span>
-                        <span style={{ fontWeight: 700, color: entry.junk_flag ? '#f87171' : '#34d399' }}>
-                            {entry.junk_flag ? 'Junk Food Eaten' : 'Clean Eating!'}
+                        <span style={{ fontSize: '1.5rem' }}>{(entry.habits && entry.habits['Junk Food']) ? '🍔' : '🥗'}</span>
+                        <span style={{ fontWeight: 700, color: (entry.habits && entry.habits['Junk Food']) ? '#f87171' : '#34d399' }}>
+                            {(entry.habits && entry.habits['Junk Food']) ? 'Junk Food Eaten' : 'Clean Eating!'}
                         </span>
                     </div>
 
@@ -258,28 +258,57 @@ export default function DailyEntry({ date }) {
                 errors={errors}
             />
 
-            {/* Junk Food Section */}
-            <div className="glass-panel" style={{ borderLeft: `4px solid ${entry.junk_flag ? 'var(--danger)' : 'var(--primary-500)'}`, padding: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                        <h3 className="input-label" style={{ margin: 0, fontSize: '1.1rem' }}>Junk Food</h3>
-                        <p style={{ fontSize: '0.85rem', margin: '4px 0 0 0', color: 'var(--text-muted)' }}>Did you consume any junk food?</p>
+            {/* Core Metrics Section */}
+            <div style={{ marginBottom: '24px' }}>
+                <h3 className="text-gradient" style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Daily Check</h3>
+                <div
+                    onClick={() => updateEntry({ junk: !entry.junk })}
+                    className="glass-panel"
+                    style={{
+                        padding: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        border: entry.junk ? '1px solid var(--danger)' : '1px solid var(--glass-border)',
+                        background: entry.junk ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.03)'
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                            fontSize: '1.5rem',
+                            background: 'rgba(255,255,255,0.1)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            🍔
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 600, color: entry.junk ? '#f87171' : 'var(--text-main)' }}>
+                                Junk Food
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                {entry.junk ? 'Tracked as "Junk"' : 'Clean eating today?'}
+                            </div>
+                        </div>
                     </div>
-                    <button
-                        className="btn"
-                        style={{
-                            width: 'auto',
-                            padding: '8px 16px',
-                            background: entry.junk_flag ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                            border: `1px solid ${entry.junk_flag ? 'var(--danger)' : 'var(--primary-500)'}`,
-                            color: entry.junk_flag ? '#f87171' : '#34d399',
-                            transition: 'all 0.3s ease',
-                            fontWeight: 600
-                        }}
-                        onClick={() => updateEntry({ junk_flag: !entry.junk_flag })}
-                    >
-                        {entry.junk_flag ? 'YES 🍔' : 'NO 🥗'}
-                    </button>
+                    <div style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '6px',
+                        border: entry.junk ? 'none' : '2px solid var(--text-muted)',
+                        background: entry.junk ? '#ef4444' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white'
+                    }}>
+                        {entry.junk && <CheckCircle size={16} />}
+                    </div>
                 </div>
             </div>
 

@@ -9,9 +9,7 @@ const INITIAL_STATE = {
     lunch: '',
     evening: '',
     dinner: '',
-    junk_flag: false,
-    buttermilk_flag: false,
-    omega3_flag: false,
+    habits: {}, // Dynamic habits: { "Habit Name": true/false }
     notes: ''
 };
 
@@ -73,10 +71,8 @@ export function useDailyEntry(dateStr) {
                         ...INITIAL_STATE,
                         ...saved,
                         ...meals,
-                        // Explicitly map habits safely
-                        junk_flag: habits['Junk Food'] ? true : false,
-                        buttermilk_flag: habits['Buttermilk'] ? true : false,
-                        omega3_flag: habits['Omega-3'] ? true : false
+                        habits: habits, // Load habits directly
+                        junk: !!saved.junk // Ensure boolean
                     };
 
                     setEntry(flatEntry);
@@ -135,11 +131,7 @@ export function useDailyEntry(dateStr) {
                 mid_snack: entry.mid_snack,
                 evening: entry.evening
             },
-            habits: {
-                'Junk Food': entry.junk_flag,
-                'Buttermilk': entry.buttermilk_flag,
-                'Omega-3': entry.omega3_flag
-            }
+            habits: entry.habits // Send habits object directly
         };
 
         try {
