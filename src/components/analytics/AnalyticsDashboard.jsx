@@ -8,6 +8,7 @@ import WeightChart from './WeightChart';
 import DailyProgressChart from './DailyProgressChart';
 import GoalPieChart from './GoalPieChart';
 import PredictionCard from './PredictionCard';
+import ResilienceCard from './ResilienceCard';
 
 import HabitImpactCard from './HabitImpactCard';
 import MetricCard from './MetricCard';
@@ -45,6 +46,7 @@ export default function AnalyticsDashboard() {
     const [dailyProgressData, setDailyProgressData] = useState([]);
     const [goalPieData, setGoalPieData] = useState([]);
     const [prediction, setPrediction] = useState(null);
+    const [resilience, setResilience] = useState(null);
 
     const [habitImpact, setHabitImpact] = useState(null);
     const [streaks, setStreaks] = useState(null);
@@ -88,8 +90,24 @@ export default function AnalyticsDashboard() {
                 const metrics = analytics.calculateProgress(savedGoal, currentWeight);
                 setStats(metrics);
 
-                const cData = analytics.prepareChartData(entriesMap, savedGoal);
+                const trueWeightMap = analytics.calculateTrueWeight(entriesMap);
+
+                // Prepare chart data with True Weight
+                const cData = entriesArray
+                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                    .map(e => ({
+                        date: new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        weight: parseFloat(e.weight),
+                        trueWeight: trueWeightMap[e.date],
+                        target: savedGoal ? parseFloat(savedGoal.targetWeight) : null
+                    }))
+                    .filter(e => !isNaN(e.weight));
+
                 setChartData(cData);
+
+                // Resilience
+                setResilience(analytics.calculateResilience(entriesMap));
+
 
                 const dpData = analytics.prepareDailyProgressData(entriesMap, savedGoal);
                 setDailyProgressData(dpData);
@@ -312,6 +330,7 @@ export default function AnalyticsDashboard() {
                         style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
                     >
                         <PredictionCard prediction={prediction} />
+                        <ResilienceCard data={resilience} />
 
 
 

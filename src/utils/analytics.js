@@ -343,6 +343,7 @@ export const analytics = {
         const GAIN_THRESHOLD = 2.0; // kg
         const LOSS_THRESHOLD = -1.5; // kg
 
+        // Sanity Check
         if (curr > 300 || curr < 30) {
             return {
                 isAnomaly: true,
@@ -371,5 +372,109 @@ export const analytics = {
         }
 
         return null;
+    },
+
+    // --- New Features (Resilience & True Weight) ---
+
+    calculateTrueWeight: (entries) => {
+        // Exponential Moving Average (EMA)
+        // Formula: EMA_today = (Value_today * k) + (EMA_yesterday * (1-k))
+        // k = 2 / (N + 1). For N=7 days smoothing, k = 2/8 = 0.25
+        const k = 0.2; // Smoothing factor (lower = smoother)
+
+        const sortedDates = Object.keys(entries).sort((a, b) => new Date(a) - new Date(b));
+        if (sortedDates.length === 0) return {};
+
+        const emaData = {};
+        let previousEMA = null;
+
+        sortedDates.forEach((date, i) => {
+            const weight = parseFloat(entries[date].weight);
+            if (isNaN(weight)) return;
+
+            if (previousEMA === null) {
+                // First entry starts the average
+                previousEMA = weight;
+            } else {
+                previousEMA = (weight * k) + (previousEMA * (1 - k));
+            }
+            emaData[date] = parseFloat(previousEMA.toFixed(2));
+        });
+
+        return emaData;
+    },
+
+    calculateResilience: (entries) => {
+        const sortedDates = Object.keys(entries).sort((a, b) => new Date(a) - new Date(b));
+        if (sortedDates.length < 5) return null; // Need some history
+
+        const spikes = [];
+        let totalRecoveryDays = 0;
+        let spikeCount = 0;
+
+        // Threshold for a "Spike" (e.g., gain > 0.3kg in one day)
+        const SPIKE_THRESHOLD = 0.3;
+
+        for (let i = 1; i < sortedDates.length; i++) {
+            const date = sortedDates[i];
+            const prevDate = sortedDates[i - 1];
+
+            const currentWeight = parseFloat(entries[date].weight);
+            const prevWeight = parseFloat(entries[prevDate].weight);
+
+            if (isNaN(currentWeight) || isNaN(prevWeight)) continue;
+
+            const delta = currentWeight - prevWeight;
+
+            // Detect Spike
+            if (delta >= SPIKE_THRESHOLD) {
+                // Search forward for recovery (when weight <= prevWeight)
+                let recoveredDate = null;
+                let daysToRecover = 0;
+
+                for (let j = i + 1; j < sortedDates.length; j++) {
+                    const futureDate = sortedDates[j];
+                    const futureWeight = parseFloat(entries[futureDate].weight);
+
+                    const timeDiff = new Date(futureDate) - new Date(date);
+                    const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+                    if (futureWeight <= prevWeight) {
+                        recoveredDate = futureDate;
+                        daysToRecover = dayDiff; // Days from spike to recovery
+                        break;
+                    }
+
+                    // Timeout: If not recovered in 14 days, ignore (it was real gain)
+                    if (dayDiff > 14) break;
+                }
+
+                if (recoveredDate) {
+                    spikes.push({
+                        spikeDate: date,
+                        spikeAmount: delta,
+                        daysToRecover
+                    });
+                    totalRecoveryDays += daysToRecover;
+                    spikeCount++;
+                }
+            }
+        }
+
+        if (spikeCount === 0) return { avgRecovery: 0, score: 'Unbreakable', count: 0 };
+
+        const avgRecovery = (totalRecoveryDays / spikeCount).toFixed(1);
+
+        let score = 'Normal';
+        if (avgRecovery <= 2) score = 'Rubber Band'; // Very resilient
+        else if (avgRecovery <= 4) score = 'Steady';
+        else score = 'Slow Burn';
+
+        return {
+            avgRecovery,
+            score,
+            count: spikeCount,
+            lastSpike: spikes[spikes.length - 1]
+        };
     }
 };

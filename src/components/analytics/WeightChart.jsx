@@ -65,6 +65,17 @@ export default function WeightChart({ data, target }) {
                         connectNulls
                         animationDuration={1500}
                     />
+                    <Line
+                        type="monotone"
+                        dataKey="trueWeight"
+                        name="True Weight"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 4, fill: '#3b82f6' }}
+                        strokeDasharray="5 5"
+                        animationDuration={1500}
+                    />
                 </LineChart>
             </ResponsiveContainer>
         </div>
