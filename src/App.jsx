@@ -13,6 +13,7 @@ import OnboardingPage from './components/auth/OnboardingPage'
 import PrivacyPolicy from './components/legal/PrivacyPolicy'
 import TermsOfService from './components/legal/TermsOfService'
 import NavButton from './components/NavButton'
+import Chatbot from './components/chat/Chatbot'
 import PageTransition from './components/PageTransition'
 import { Book, LayoutDashboard, PlusCircle } from 'lucide-react'
 import { Capacitor } from '@capacitor/core';
@@ -156,6 +157,7 @@ function AppContent() {
                     } />
                 </Routes>
             </AnimatePresence>
+            <Chatbot />
         </RequireUser>
     )
 }
