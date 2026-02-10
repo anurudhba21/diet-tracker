@@ -1,13 +1,21 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from 'recharts';
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
             <div className="glass-panel" style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15, 23, 42, 0.9)' }}>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '4px' }}>{label}</p>
-                <p style={{ color: 'var(--primary-500)', fontWeight: 'bold', fontSize: '1.1rem', margin: 0 }}>
-                    {payload[0].value} <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 'normal' }}>kg</span>
-                </p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '8px' }}>{label}</p>
+                {payload.map((entry, index) => (
+                    <div key={index} style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: entry.color }} />
+                        <span style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>
+                            {entry.name === 'weight' ? 'Scale Weight' : entry.name}:
+                        </span>
+                        <span style={{ color: 'var(--text-bright)', fontWeight: 'bold' }}>
+                            {entry.value} kg
+                        </span>
+                    </div>
+                ))}
             </div>
         );
     }
@@ -52,10 +60,12 @@ export default function WeightChart({ data, target }) {
                         width={35}
                     />
                     <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 2 }} />
+                    <Legend verticalAlign="top" height={36} iconType="circle" />
                     {target && (
                         <ReferenceLine y={target} stroke="#3b82f6" strokeDasharray="3 3" label={{ position: 'right', value: 'Goal', fill: '#3b82f6', fontSize: 10 }} />
                     )}
                     <Line
+                        name="Scale Weight"
                         type="monotone"
                         dataKey="weight"
                         stroke="#10b981"
