@@ -265,9 +265,10 @@ const db = {
         // habit: { id, userId, name, timeOfDay, active }
         const { id, userId, name, timeOfDay, active } = habit;
         if (DB_MODE === 'cloud') {
-            const { error } = await supabase.from('user_habits').upsert({ id, user_id: userId, name, time_of_day: timeOfDay, active });
+            const habitId = id || crypto.randomUUID();
+            const { error } = await supabase.from('user_habits').upsert({ id: habitId, user_id: userId, name, time_of_day: timeOfDay, active });
             if (error) throw error;
-            return { id };
+            return { id: habitId };
         } else {
             return new Promise((resolve, reject) => {
                 const newId = id || crypto.randomUUID();
