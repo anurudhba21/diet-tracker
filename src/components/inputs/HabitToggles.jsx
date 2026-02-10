@@ -62,7 +62,7 @@ export default function HabitToggles({ data, onChange }) {
     return (
         <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 className="input-label" style={{ margin: 0 }}>Habits</h3>
+                <h3 className="input-label" style={{ margin: 0 }}>Habits <span style={{ fontSize: '0.7em', opacity: 0.5 }}>v1.1</span></h3>
                 <button
                     onClick={() => setShowManager(!showManager)}
                     style={{ background: 'none', border: 'none', color: 'var(--primary-500)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
