@@ -85,6 +85,6 @@ export const exportService = {
 
         // 4. Generate Filename & Save
         const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 16);
-        XLSX.writeFile(workbook, `diet-tracker_${dateStr}.xlsx`);
+        XLSX.writeFile(workbook, `diet-tracker_${dateStr}_v2.xlsx`);
     }
 };
