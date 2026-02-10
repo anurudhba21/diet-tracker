@@ -4,10 +4,25 @@ import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../hooks/useChat';
 import { useDailyEntry } from '../../hooks/useDailyEntry';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 export default function Chatbot() {
     const { user } = useAuth();
-    if (!user) return null;
+    const location = useLocation();
+
+    // Debugging: Log status
+    useEffect(() => {
+        console.log("Chatbot Render Check:", { user: !!user, path: location.pathname });
+    }, [user, location.pathname]);
+
+    // Hide on auth pages
+    const isAuthPage = ['/login', '/register', '/privacy', '/terms'].includes(location.pathname);
+    if (isAuthPage) return null;
+
+    // If not on auth page, we should be logged in (protected by RequireUser), so show it.
+    // We remove the strict `!user` check here because RequireUser handles it, 
+    // and sometimes user object might be refreshing.
+    // If user is truly null on a protected page, RequireUser will redirect anyway.
 
     const [isOpen, setIsOpen] = useState(false);
     const [hasUnread, setHasUnread] = useState(false);
@@ -91,7 +106,7 @@ export default function Chatbot() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 200, // Above everything
+                    zIndex: 9999, // Ensure it is consistently on top
                     background: 'var(--primary-600)',
                     border: 'none',
                     boxShadow: '0 10px 30px -5px var(--primary-glow)',
