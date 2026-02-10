@@ -64,12 +64,7 @@ export function useHabits() {
             setLoading(true);
             const data = await api.getHabits(user.id);
 
-            // Seed defaults if empty
-            if (data.length === 0) {
-                await seedDefaults();
-            } else {
-                setHabits(data);
-            }
+            setHabits(data);
         } catch (error) {
             console.error('Failed to fetch habits', error);
         } finally {
