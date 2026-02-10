@@ -406,7 +406,7 @@ export const analytics = {
 
     calculateResilience: (entries) => {
         const sortedDates = Object.keys(entries).sort((a, b) => new Date(a) - new Date(b));
-        if (sortedDates.length < 5) return null; // Need some history
+        if (sortedDates.length < 3) return null; // Need some history
 
         const spikes = [];
         let totalRecoveryDays = 0;

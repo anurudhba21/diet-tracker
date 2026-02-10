@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Activity, Zap, TrendingUp, ShieldCheck } from 'lucide-react';
 
 export default function ResilienceCard({ data }) {
-    if (!data || data.count === 0) return null;
+    if (!data) return null;
 
     const { avgRecovery, score, count } = data;
 
@@ -67,10 +67,10 @@ export default function ResilienceCard({ data }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                         <div style={{ fontSize: '0.8rem', color: color, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>
-                            Bounce Back Time
+                            {score === 'Unbreakable' ? 'Resilience Score' : 'Bounce Back Time'}
                         </div>
                         <div style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: '4px 0', color: 'var(--text-bright)' }}>
-                            {avgRecovery} Days
+                            {score === 'Unbreakable' ? 'Infinite' : `${avgRecovery} Days`}
                         </div>
                         <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                             {message}
