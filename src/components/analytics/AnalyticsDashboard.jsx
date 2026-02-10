@@ -4,7 +4,7 @@ import { api } from '../../utils/api';
 import { analytics } from '../../utils/analytics';
 import GoalSetup from './GoalSetup';
 import WeightChart from './WeightChart';
-import WhatIfSimulator from './WhatIfSimulator';
+
 import DailyProgressChart from './DailyProgressChart';
 import GoalPieChart from './GoalPieChart';
 import PredictionCard from './PredictionCard';
@@ -313,12 +313,7 @@ export default function AnalyticsDashboard() {
                     >
                         <PredictionCard prediction={prediction} />
 
-                        <WhatIfSimulator
-                            currentWeight={stats?.current}
-                            targetWeight={goal?.targetWeight}
-                            currentRate={prediction?.ratePerWeek}
-                            habitImpact={habitImpact}
-                        />
+
 
                         <HabitImpactCard impactData={habitImpact} />
                         <HabitStats stats={habitStats} />
