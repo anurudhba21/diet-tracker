@@ -35,16 +35,22 @@ export const geminiService = {
             `;
 
             const result = await model.generateContent(prompt);
-            const response = await result.response;
             const textResponse = response.text();
+            console.log("Raw Gemini Response:", textResponse); // For debugging
 
-            // Clean up code blocks if present
-            const cleanJson = textResponse.replace(/^```json/, '').replace(/```$/, '').trim();
+            // Robust JSON extraction: Find ANY JSON object in the text
+            const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
 
+            if (!jsonMatch) {
+                console.error("No JSON found in response");
+                return { error: "I understood that, but couldn't format it properly. Try again?" };
+            }
+
+            const cleanJson = jsonMatch[0];
             return JSON.parse(cleanJson);
         } catch (error) {
             console.error("Gemini Parse Error:", error);
-            return { error: "Failed to parse meal" };
+            return { error: "Oops! Technical hiccup. Try again?" };
         }
     }
 };

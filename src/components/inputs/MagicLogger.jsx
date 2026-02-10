@@ -12,6 +12,12 @@ export default function MagicLogger({ onUpdate }) {
     const handleMagicLog = async () => {
         if (!input.trim()) return;
 
+        // Quick check for API key
+        if (!import.meta.env.VITE_GEMINI_API_KEY) {
+            setError("API Key is missing! Check Vercel settings.");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
