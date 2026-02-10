@@ -15,9 +15,9 @@ export const exportService = {
                 Lunch: e.lunch || '',
                 Evening: e.evening || '',
                 Dinner: e.dinner || '',
-                Junk_Food: e.junk_flag ? 'Yes' : 'No',
-                Buttermilk: e.buttermilk_flag ? 'Yes' : 'No',
-                Omega3: e.omega3_flag ? 'Yes' : 'No',
+                Junk_Food: (e.habits && e.habits['Junk Food']) ? 'Yes' : 'No',
+                Buttermilk: (e.habits && e.habits['Buttermilk']) ? 'Yes' : 'No',
+                Omega3: (e.habits && e.habits['Omega-3']) ? 'Yes' : 'No',
                 Notes: e.notes || ''
             };
         });
