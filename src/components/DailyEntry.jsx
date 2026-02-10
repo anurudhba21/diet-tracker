@@ -5,7 +5,7 @@ import WeightInput from './inputs/WeightInput';
 import MealInputs from './inputs/MealInputs';
 import HabitToggles from './inputs/HabitToggles';
 import NotesInput from './inputs/NotesInput';
-import MagicLogger from './inputs/MagicLogger';
+
 import confetti from 'canvas-confetti';
 import { CheckCircle, Edit2, AlertTriangle } from 'lucide-react';
 import { analytics } from '../utils/analytics';
@@ -81,23 +81,7 @@ export default function DailyEntry({ date }) {
         updateEntry({ [id]: value });
     };
 
-    const handleMagicUpdate = (parsedData) => {
-        const updates = {};
-        if (parsedData.breakfast) updates.breakfast = parsedData.breakfast;
-        if (parsedData.lunch) updates.lunch = parsedData.lunch;
-        if (parsedData.dinner) updates.dinner = parsedData.dinner;
-        if (parsedData.snacks) updates.snacks = parsedData.snacks;
 
-        if (Object.keys(updates).length > 0) {
-            updateEntry(updates);
-            confetti({
-                particleCount: 50,
-                spread: 60,
-                origin: { y: 0.8 },
-                colors: ['#a855f7', '#ec4899', '#8b5cf6'] // Magic colors
-            });
-        }
-    };
 
     const saveEntry = async () => {
         const result = await saveToStorage();
@@ -381,7 +365,7 @@ export default function DailyEntry({ date }) {
                 </button>
             </div>
 
-            <MagicLogger onUpdate={handleMagicUpdate} />
+
         </div>
     );
 }
