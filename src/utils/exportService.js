@@ -5,9 +5,21 @@ export const exportService = {
     generateExcel: (entries, goal) => {
         // 1. Prepare Daily Tracking Data
         const sortedDates = Object.keys(entries).sort((a, b) => new Date(b) - new Date(a));
+
+        // Scan for all unique habits across all entries to create dynamic columns
+        const allHabitsSet = new Set();
+        Object.values(entries).forEach(e => {
+            if (e.habits) {
+                Object.keys(e.habits).forEach(h => allHabitsSet.add(h));
+            }
+        });
+        const habitColumns = Array.from(allHabitsSet).sort();
+
         const dailyRows = sortedDates.map(date => {
             const e = entries[date];
-            return {
+
+            // Base Row
+            const row = {
                 Date: date,
                 Weight_kg: e.weight || '-',
                 Breakfast: e.breakfast || '',
@@ -15,11 +27,18 @@ export const exportService = {
                 Lunch: e.lunch || '',
                 Evening: e.evening || '',
                 Dinner: e.dinner || '',
-                Junk_Food: (e.habits && e.habits['Junk Food']) ? 'Yes' : 'No',
-                Buttermilk: (e.habits && e.habits['Buttermilk']) ? 'Yes' : 'No',
-                Omega3: (e.habits && e.habits['Omega-3']) ? 'Yes' : 'No',
+                Junk_Food: (e.habits && e.habits['Junk Food']) ? 'Yes' : 'No', // Keep Junk explicit if desired, or dynamic
                 Notes: e.notes || ''
             };
+
+            // Add Dynamic Habit Columns
+            habitColumns.forEach(habit => {
+                if (habit !== 'Junk Food') { // Junk already handled
+                    row[habit] = (e.habits && e.habits[habit]) ? 'Yes' : 'No';
+                }
+            });
+
+            return row;
         });
 
         const worksheet1 = XLSX.utils.json_to_sheet(dailyRows);
