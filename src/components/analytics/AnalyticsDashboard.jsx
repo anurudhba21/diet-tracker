@@ -6,6 +6,7 @@ import GoalSetup from './GoalSetup';
 import WeightChart from './WeightChart';
 import DailyProgressChart from './DailyProgressChart';
 import GoalPieChart from './GoalPieChart';
+import PredictionCard from './PredictionCard';
 
 import HabitImpactCard from './HabitImpactCard';
 import MetricCard from './MetricCard';
@@ -42,6 +43,7 @@ export default function AnalyticsDashboard() {
     const [chartData, setChartData] = useState([]);
     const [dailyProgressData, setDailyProgressData] = useState([]);
     const [goalPieData, setGoalPieData] = useState([]);
+    const [prediction, setPrediction] = useState(null);
 
     const [habitImpact, setHabitImpact] = useState(null);
     const [streaks, setStreaks] = useState(null);
@@ -93,6 +95,9 @@ export default function AnalyticsDashboard() {
 
                 const pieData = analytics.prepareGoalPieData(savedGoal, currentWeight);
                 setGoalPieData(pieData);
+
+                const pred = analytics.predictGoalDate(entriesMap, savedGoal);
+                setPrediction(pred);
 
 
 
@@ -305,6 +310,7 @@ export default function AnalyticsDashboard() {
                         transition={{ duration: 0.2 }}
                         style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
                     >
+                        <PredictionCard prediction={prediction} />
 
                         <HabitImpactCard impactData={habitImpact} />
                         <HabitStats stats={habitStats} />

@@ -113,6 +113,78 @@ export const analytics = {
         ];
     },
 
+    predictGoalDate: (entries, goal) => {
+        if (!goal || !goal.targetWeight) return null;
+
+        // 1. Prepare Data (Sort & Filter)
+        const validEntries = Object.entries(entries)
+            .map(([date, data]) => ({ date: new Date(date), weight: parseFloat(data.weight) }))
+            .filter(e => !isNaN(e.weight))
+            .sort((a, b) => a.date - b.date);
+
+        if (validEntries.length < 3) {
+            return { status: 'insufficient_data' };
+        }
+
+        // Use last 30 entries for recent trend
+        const recentEntries = validEntries.slice(-30);
+
+        // 2. Linear Regression (Least Squares)
+        // x = time (days from start), y = weight
+        const startDate = recentEntries[0].date.getTime();
+        const data = recentEntries.map(e => ({
+            x: (e.date.getTime() - startDate) / (1000 * 60 * 60 * 24), // Days since first entry in set
+            y: e.weight
+        }));
+
+        const n = data.length;
+        const sumX = data.reduce((acc, p) => acc + p.x, 0);
+        const sumY = data.reduce((acc, p) => acc + p.y, 0);
+        const sumXY = data.reduce((acc, p) => acc + p.x * p.y, 0);
+        const sumXX = data.reduce((acc, p) => acc + p.x * p.x, 0);
+
+        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+
+        // 3. Interpret Results
+        const currentRatePerWeek = slope * 7; // kg/week
+
+        // If gaining weight or plateaued (slope >= 0)
+        if (slope >= 0) {
+            return {
+                status: 'gaining',
+                ratePerWeek: currentRatePerWeek.toFixed(2)
+            };
+        }
+
+        // 4. Calculate Prediction
+        // target = slope * days + intercept
+        // days = (target - intercept) / slope
+        const targetWeight = parseFloat(goal.targetWeight);
+        const daysToGoal = (targetWeight - intercept) / slope;
+
+        // Add days to start prediction date
+        const predictedDate = new Date(startDate + (daysToGoal * 24 * 60 * 60 * 1000));
+
+        // Cap prediction at 1 year out to avoid absurd dates
+        const oneYearOut = new Date();
+        oneYearOut.setFullYear(oneYearOut.getFullYear() + 1);
+
+        if (predictedDate > oneYearOut) {
+            return {
+                status: 'too_far',
+                ratePerWeek: currentRatePerWeek.toFixed(2)
+            };
+        }
+
+        return {
+            status: 'on_track',
+            predictedDate,
+            ratePerWeek: currentRatePerWeek.toFixed(2),
+            daysRemaining: Math.ceil((predictedDate - new Date()) / (1000 * 60 * 60 * 24))
+        };
+    },
+
 
 
     calculateStreaks: (entries) => {
