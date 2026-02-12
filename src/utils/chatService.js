@@ -1,145 +1,164 @@
+// Simple Intent Recognition Service + Gemini API
+// Rule-based for speed/safety, LLM for intelligence.
 
-// Simple Intent Recognition Service
-// In a real app, this would connect to an LLM or a more robust NLU service.
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+async function callGeminiAPI(prompt, context) {
+    if (!GEMINI_API_KEY) {
+        return { text: "I'm ready to be smart, but I need my VITE_GEMINI_API_KEY in the .env file!" };
+    }
+
+    try {
+        const systemPrompt = `
+You are an expert fitness and nutrition coach. 
+Your goal is to help the user achieve their health goals (weight loss, muscle gain, consistency).
+You have access to the user's data in the JSON object below.
+Use this data to give specific, personalized advice.
+Be encouraging but realistic. Keep answers concise (under 3 sentences) unless asked for a plan.
+
+User Context:
+${JSON.stringify(context, null, 2)}
+`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: systemPrompt },
+                        { text: `User Question: ${prompt}` }
+                    ]
+                }]
+            })
+        });
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+
+        let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't think of a response.";
+
+        // Clean up formatting for chat
+        text = text.replace(/\*\*/g, '').replace(/\*/g, '-');
+
+        return { text };
+
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        return { text: "My brain is having trouble connecting to the cloud right now. Try again later!" };
+    }
+}
 
 export const chatService = {
     // Analyze user message and return a response + optional action
     processMessage: async (text, context = {}) => {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 600));
-
         const lowerText = text.toLowerCase();
+
+        // --- LAYER 1: RULE-BASED (Fast, Deterministic, Actions) ---
 
         // 1. Check for specific context-based answers (e.g. answering a prompt)
         if (context.lastPromptType === 'WEIGHT') {
             const weightMatch = text.match(/(\d+(\.\d+)?)/);
             if (weightMatch) {
                 const weight = parseFloat(weightMatch[0]);
-                if (weight > 30 && weight < 200) {
+                if (weight > 30 && weight < 300) {
                     return {
                         text: `Got it! I've updated your weight to ${weight}kg.`,
                         action: { type: 'UPDATE_ENTRY', payload: { weight: weight } }
                     };
                 } else {
-                    return { text: "That weight seems a bit off. Could you double-check? (Enter a number between 30 and 200)" };
+                    return { text: "That weight seems a bit off. Could you double-check? (Enter a number between 30 and 300)" };
                 }
             }
         }
 
-        if (context.lastPromptType === 'MEAL_LUNCH') {
+        if (context.lastPromptType && context.lastPromptType.startsWith('MEAL_')) {
+            const mealType = context.lastPromptType.split('_')[1].toLowerCase(); // LUNCH -> lunch
             return {
-                text: `Yum! I've logged "${text}" for lunch.`,
-                action: { type: 'UPDATE_ENTRY', payload: { lunch: text } }
+                text: `Yum! I've logged "${text}" for ${mealType}.`,
+                action: { type: 'UPDATE_ENTRY', payload: { [mealType]: text } }
             };
         }
 
-        if (context.lastPromptType === 'MEAL_BREAKFAST') {
-            return {
-                text: `Good start! I've logged "${text}" for breakfast.`,
-                action: { type: 'UPDATE_ENTRY', payload: { breakfast: text } }
-            };
-        }
-
-        if (context.lastPromptType === 'MEAL_DINNER') {
-            return {
-                text: `Sounds good. I've logged "${text}" for dinner.`,
-                action: { type: 'UPDATE_ENTRY', payload: { dinner: text } }
-            };
-        }
-
-        // 2. General Intent Recognition
-        if (lowerText.includes('hello') || lowerText.includes('hi')) {
-            return { text: "Hello! I'm your diet assistant. I can help you log meals or track your weight. How can I help today?" };
-        }
-
-        if (lowerText.includes('joke')) {
-            return { text: "Why did the tofu cross the road? To prove he wasn't chicken!" };
-        }
-
-        if (lowerText.includes('thank')) {
-            return { text: "You're welcome! Keep up the good work!" };
-        }
-
-        if (lowerText.includes('bye')) {
-            return { text: "Goodbye! improved everyday!" };
-        }
-
-        // 4. Data-Aware Q&A (Requires context)
-        if (context.stats && context.history) {
-            // Workout Queries
-            if (lowerText.includes('how many workouts') || lowerText.includes('workout count')) {
-                const count = context.stats.workoutsCompletedLast7Days;
-                return { text: `You've completed ${count} workouts in the last 7 days. Keep it up!` };
-            }
-
-            // Weight Queries
-            if (lowerText.includes('weight') && (lowerText.includes('lost') || lowerText.includes('progress'))) {
-                const lost = context.stats.weightLost;
-                const current = context.stats.currentWeight;
-                if (lost > 0) return { text: `You've lost ${lost}kg so far! Current weight: ${current}kg.` };
-                if (lost < 0) return { text: `You've gained ${Math.abs(lost)}kg. Current weight: ${current}kg.` };
-                return { text: `Your weight is stable at ${current}kg.` };
-            }
-
-            if (lowerText.includes('current weight') || lowerText.includes('my weight')) {
-                return { text: `Your latest logged weight is ${context.stats.currentWeight}kg.` };
-            }
-
-            // History Queries
-            if (lowerText.includes('eat') && lowerText.includes('yesterday')) {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yDateStr = yesterday.toISOString().split('T')[0];
-                const yEntry = context.history.find(e => e.date === yDateStr);
-
-                if (!yEntry) return { text: "I don't have any food logs for yesterday." };
-
-                const meals = [];
-                if (yEntry.breakfast) meals.push(`Breakfast: ${yEntry.breakfast}`);
-                if (yEntry.lunch) meals.push(`Lunch: ${yEntry.lunch}`);
-                if (yEntry.dinner) meals.push(`Dinner: ${yEntry.dinner}`);
-
-                if (meals.length === 0) return { text: "You didn't log any specific meals yesterday." };
-                return { text: `Yesterday you had:\n${meals.join('\n')}` };
+        // 2. Specific Action Triggers
+        if (lowerText.includes('log weight') || (lowerText.includes('weight') && lowerText.includes('is'))) {
+            // Simple parser for "Weight is 70"
+            const match = text.match(/(\d+(\.\d+)?)/);
+            if (match) {
+                const val = parseFloat(match[0]);
+                return {
+                    text: `Saved weight: ${val}kg`,
+                    action: { type: 'UPDATE_ENTRY', payload: { weight: val } }
+                };
             }
         }
 
-        // 3. AI Analysis Simulation (Context: WORKOUT_ANALYSIS)
+        // 3. Data-Aware Rules (Fast Lookup)
+        if (lowerText.includes('how many workouts')) {
+            const count = context.stats?.workoutsCompletedLast7Days ?? 0;
+            return { text: `You've completed ${count} workouts in the last 7 days.` };
+        }
+
+        // --- LAYER 2: AI BRAIN (Gemini) ---
+
+        // Special Case: Workout Analysis Report (Needs JSON)
         if (context.type === 'WORKOUT_ANALYSIS') {
-            await new Promise(resolve => setTimeout(resolve, 1500)); // Longer delay for "analysis"
+            const prompt = `
+Analyze the user's workout data and return a JSON object with these EXACT keys:
+- adherence: A number 0-100 indicating consistency.
+- trend: A string (e.g., "Trending Up", "Stable", "Needs Work").
+- recommendation: A string (max 2 sentences) with specific advice.
 
-            // Simulate logic based on simulated data (since we don't have full history in context here yet)
-            // In real app, we'd analyze context.entry.workouts vs scheduled
+Do NOT return markdown code blocks. Just the raw JSON string.
+`;
+            // Call Gemini with specific prompt, expecting JSON
+            // We can reuse callGeminiAPI with a modified sys prompt or just handle it here
+            // Let's modify callGeminiAPI to support JSON mode or just ask for it.
 
-            const adherence = Math.floor(Math.random() * 30) + 70; // Random 70-100%
-            let trend = "Stable";
-            let rec = "Keep consistent with your sets.";
+            try {
+                // Determine logic: We can pass a flag or just do it inline?
+                // Inline for clarity since callGeminiAPI is generic text
 
-            const weight = context.entry?.weight || 0;
-            const prevWeight = context.previousWeight || 0;
+                if (!GEMINI_API_KEY) return { text: "Missing API Key for Analysis." };
 
-            if (weight < prevWeight) {
-                trend = "Down";
-                rec = "Great progress! Your routine is effective. Keep the intensity high.";
-            } else if (weight > prevWeight) {
-                trend = "Up";
-                rec = "Weight is slightly up. Ensure you aren't overeating to compensate for workouts.";
-            } else {
-                trend = "Stagnant";
-                rec = "Plateau detected. Try increasing reps or shortening rest periods (Progressive Overload)."
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: `You are a fitness analyst. Context: ${JSON.stringify(context)}` },
+                                { text: prompt }
+                            ]
+                        }],
+                        generationConfig: { responseMimeType: "application/json" } // Force JSON
+                    })
+                });
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+                const analysis = JSON.parse(text);
+
+                return {
+                    text: "Analysis Complete",
+                    analysis: {
+                        adherence: analysis.adherence || 0,
+                        trend: analysis.trend || "Unknown",
+                        recommendation: analysis.recommendation || "Keep pushing!"
+                    }
+                };
+            } catch (e) {
+                console.error("Gemini JSON Analysis Failed", e);
+                // Fallback to mock
+                return {
+                    text: "Analysis Failed (Fallback)",
+                    analysis: { adherence: 50, trend: "Error", recommendation: "Could not connect to AI." }
+                };
             }
-
-            return {
-                text: "Analysis Complete",
-                analysis: {
-                    adherence_score: adherence,
-                    trend_analysis: trend,
-                    recommendation: rec
-                }
-            };
         }
 
-        // Default fallback
-        return { text: "I'm not connected to a real brain yet, so I only know simple things! Try telling me your weight if I ask, or just log your meals normally for now." };
+        // General Chat Query
+        // If no rules matched, asking the LLM
+        return await callGeminiAPI(text, context);
     }
 };
