@@ -64,6 +64,46 @@ export const chatService = {
             return { text: "Goodbye! improved everyday!" };
         }
 
+        // 4. Data-Aware Q&A (Requires context)
+        if (context.stats && context.history) {
+            // Workout Queries
+            if (lowerText.includes('how many workouts') || lowerText.includes('workout count')) {
+                const count = context.stats.workoutsCompletedLast7Days;
+                return { text: `You've completed ${count} workouts in the last 7 days. Keep it up!` };
+            }
+
+            // Weight Queries
+            if (lowerText.includes('weight') && (lowerText.includes('lost') || lowerText.includes('progress'))) {
+                const lost = context.stats.weightLost;
+                const current = context.stats.currentWeight;
+                if (lost > 0) return { text: `You've lost ${lost}kg so far! Current weight: ${current}kg.` };
+                if (lost < 0) return { text: `You've gained ${Math.abs(lost)}kg. Current weight: ${current}kg.` };
+                return { text: `Your weight is stable at ${current}kg.` };
+            }
+
+            if (lowerText.includes('current weight') || lowerText.includes('my weight')) {
+                return { text: `Your latest logged weight is ${context.stats.currentWeight}kg.` };
+            }
+
+            // History Queries
+            if (lowerText.includes('eat') && lowerText.includes('yesterday')) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yDateStr = yesterday.toISOString().split('T')[0];
+                const yEntry = context.history.find(e => e.date === yDateStr);
+
+                if (!yEntry) return { text: "I don't have any food logs for yesterday." };
+
+                const meals = [];
+                if (yEntry.breakfast) meals.push(`Breakfast: ${yEntry.breakfast}`);
+                if (yEntry.lunch) meals.push(`Lunch: ${yEntry.lunch}`);
+                if (yEntry.dinner) meals.push(`Dinner: ${yEntry.dinner}`);
+
+                if (meals.length === 0) return { text: "You didn't log any specific meals yesterday." };
+                return { text: `Yesterday you had:\n${meals.join('\n')}` };
+            }
+        }
+
         // 3. AI Analysis Simulation (Context: WORKOUT_ANALYSIS)
         if (context.type === 'WORKOUT_ANALYSIS') {
             await new Promise(resolve => setTimeout(resolve, 1500)); // Longer delay for "analysis"

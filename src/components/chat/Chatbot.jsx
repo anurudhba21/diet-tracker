@@ -3,12 +3,14 @@ import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../hooks/useChat';
 import { useDailyEntry } from '../../hooks/useDailyEntry';
+import { useAggregatedData } from '../../hooks/useAggregatedData';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
 export default function Chatbot() {
     const { user } = useAuth();
     const location = useLocation();
+    const aggregatedData = useAggregatedData();
 
     // Debugging: Log status
     useEffect(() => {
@@ -74,7 +76,7 @@ export default function Chatbot() {
         const text = input;
         setInput('');
 
-        await sendMessage(text, (action) => {
+        await sendMessage(text, aggregatedData, (action) => {
             if (action.type === 'UPDATE_ENTRY') {
                 console.log("Applying Action:", action);
                 updateEntry(action.payload);

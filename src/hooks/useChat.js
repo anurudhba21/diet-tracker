@@ -18,14 +18,25 @@ export function useChat() {
         setMessages(prev => [...prev, newMessage]);
     }, []);
 
-    const sendMessage = useCallback(async (text, onAction) => {
+    const sendMessage = useCallback(async (text, context = {}, onAction = null) => {
+        // Handle optional context argument for backward compatibility if needed, 
+        // but we will update call sites.
+        // If 2nd arg is function, treat as onAction (legacy support)
+        if (typeof context === 'function') {
+            onAction = context;
+            context = {};
+        }
+
         // 1. Add User Message
         addMessage(text, 'user');
         setIsTyping(true);
 
         try {
             // 2. Get Response from Service
-            const response = await chatService.processMessage(text, { lastPromptType });
+            const response = await chatService.processMessage(text, {
+                lastPromptType,
+                ...context
+            });
 
             // 3. Add AI Message
             addMessage(response.text, 'ai');
