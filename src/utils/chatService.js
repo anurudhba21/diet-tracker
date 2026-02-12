@@ -64,6 +64,41 @@ export const chatService = {
             return { text: "Goodbye! improved everyday!" };
         }
 
+        // 3. AI Analysis Simulation (Context: WORKOUT_ANALYSIS)
+        if (context.type === 'WORKOUT_ANALYSIS') {
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Longer delay for "analysis"
+
+            // Simulate logic based on simulated data (since we don't have full history in context here yet)
+            // In real app, we'd analyze context.entry.workouts vs scheduled
+
+            const adherence = Math.floor(Math.random() * 30) + 70; // Random 70-100%
+            let trend = "Stable";
+            let rec = "Keep consistent with your sets.";
+
+            const weight = context.entry?.weight || 0;
+            const prevWeight = context.previousWeight || 0;
+
+            if (weight < prevWeight) {
+                trend = "Down";
+                rec = "Great progress! Your routine is effective. Keep the intensity high.";
+            } else if (weight > prevWeight) {
+                trend = "Up";
+                rec = "Weight is slightly up. Ensure you aren't overeating to compensate for workouts.";
+            } else {
+                trend = "Stagnant";
+                rec = "Plateau detected. Try increasing reps or shortening rest periods (Progressive Overload)."
+            }
+
+            return {
+                text: "Analysis Complete",
+                analysis: {
+                    adherence_score: adherence,
+                    trend_analysis: trend,
+                    recommendation: rec
+                }
+            };
+        }
+
         // Default fallback
         return { text: "I'm not connected to a real brain yet, so I only know simple things! Try telling me your weight if I ask, or just log your meals normally for now." };
     }
