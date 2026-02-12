@@ -35,3 +35,5 @@
 - [x] Implement Workout Session Summary View <!-- id: 35 -->
 - [x] Fix Progress Page UI (GoalPieChart legend, BMI Card layout) <!-- id: 37 -->
 - [x] Implement LLM Workout & Weight Analysis (Holistic Progress) <!-- id: 38 -->
+- [x] Debug Metabolic Deep Dive (Fix "Not Working" issue) <!-- id: 39 -->
+- [x] Implement Global AI Coach Chatbot (Floating Widget) <!-- id: 40 -->

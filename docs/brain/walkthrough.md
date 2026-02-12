@@ -22,6 +22,7 @@ The app has been refactored into three focused, date-aware pages. History is now
 - **AI Coach**: Get high-level analysis of your progress across all metrics.
 - **Metabolic Deep Dive**: A new AI-powered diagnostic tool that correlates your workout frequency/volume with your weight trends to find exactly what's driving your metabolic progress.
 - **Polished Layout**: Improved visualization and layout for **BMI Score** and **Goal Progress**, ensuring they fit perfectly even on small mobile screens.
+- **AI Coach Chatbot**: A global, floating AI Coach is now available on every page. It can help you log data, answer questions about your progress, and provide proactive advice to help you reach your goals.
 
 ---
 
