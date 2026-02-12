@@ -101,6 +101,60 @@ export const chatService = {
 
         // --- LAYER 2: AI BRAIN (Gemini) ---
 
+        // Holistic Metabolism Analysis (Workouts + Weight)
+        if (context.type === 'HOLISTIC_ANALYSIS') {
+            const prompt = `
+Analyze the correlation between the user's workout volume/consistency and their weight trends.
+Data:
+- Goal: ${JSON.stringify(context.data.goal)}
+- Weights: ${JSON.stringify(context.data.weights)}
+- Workouts: ${JSON.stringify(context.data.workouts)}
+
+Return a JSON object with these EXACT keys:
+- insight: A detailed (2-3 sentences) correlation between their activity and weight trends.
+- metabolicRating: A number 1-10 representing their metabolic progress and consistency.
+- nextSteps: A list of 2 actionable improvements they should make.
+
+Do NOT return markdown code blocks. Just the raw JSON string.
+`;
+            try {
+                if (!GEMINI_API_KEY) return { text: "Missing API Key for Analysis." };
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "You are a metabolic fitness coach analysis agent." },
+                                { text: prompt }
+                            ]
+                        }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+                const analysis = JSON.parse(text);
+
+                return {
+                    text: "Holistic Analysis Complete",
+                    analysis: {
+                        insight: analysis.insight || "Keep logging data for deeper correlations.",
+                        metabolicRating: analysis.metabolicRating || 5,
+                        nextSteps: analysis.nextSteps || ["Stay consistent", "Log more data"]
+                    }
+                };
+            } catch (e) {
+                console.error("Holistic Analysis Failed", e);
+                return {
+                    text: "Holistic Analysis Failed",
+                    analysis: { insight: "Could not connect to AI for metabolic insights.", metabolicRating: 0, nextSteps: ["Try again later"] }
+                };
+            }
+        }
+
         // Special Case: Workout Analysis Report (Needs JSON)
         if (context.type === 'WORKOUT_ANALYSIS') {
             const prompt = `

@@ -23,6 +23,7 @@ import { TrendingUp, TrendingDown, PlusCircle, ArrowRight, Target, PieChart as P
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import SegmentedControl from './SegmentedControl';
+import { chatService } from '../../utils/chatService';
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -58,6 +59,32 @@ export default function ProgressPage() {
     const [hasEntries, setHasEntries] = useState(false);
     const [activeTab, setActiveTab] = useState('meals');
     const navigate = useNavigate();
+
+    // Holistic Analysis State
+    const [analyzingMetabolism, setAnalyzingMetabolism] = useState(false);
+    const [metabolicAnalysis, setMetabolicAnalysis] = useState(null);
+
+    const handleHolisticAnalysis = async () => {
+        setAnalyzingMetabolism(true);
+        try {
+            const context = {
+                type: 'HOLISTIC_ANALYSIS',
+                data: {
+                    goal: goal,
+                    weights: chartData.map(d => ({ date: d.date, weight: d.weight })),
+                    workouts: heatmapEntries // uses the full entries map which has workouts
+                }
+            };
+            const result = await chatService.processMessage("Run metabolic deep dive", context);
+            if (result.analysis) {
+                setMetabolicAnalysis(result.analysis);
+            }
+        } catch (error) {
+            console.error("Metabolic analysis failed", error);
+        } finally {
+            setAnalyzingMetabolism(false);
+        }
+    };
 
     // Load data
     const refreshData = async () => {
@@ -249,6 +276,100 @@ export default function ProgressPage() {
                         transition={{ duration: 0.2 }}
                         style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
                     >
+                        {/* Metabolic Deep Dive Banner */}
+                        <motion.div
+                            className="glass-panel"
+                            style={{
+                                padding: '24px',
+                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1))',
+                                border: '1px solid rgba(16, 185, 129, 0.2)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '16px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ padding: '12px', background: 'var(--primary-glow)', borderRadius: '16px', color: '#fff' }}>
+                                        <TrendingUp size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Metabolic Deep Dive</h3>
+                                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>AI-driven correlation between activity and weight</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleHolisticAnalysis}
+                                    disabled={analyzingMetabolism}
+                                    className="btn-sm"
+                                    style={{
+                                        background: 'var(--primary-500)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '10px 20px',
+                                        borderRadius: '12px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 4px 15px rgba(52, 211, 153, 0.3)'
+                                    }}
+                                >
+                                    {analyzingMetabolism ? 'Analyzing...' : 'Run Analysis'}
+                                </button>
+                            </div>
+
+                            <AnimatePresence>
+                                {metabolicAnalysis && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        style={{
+                                            paddingTop: '16px',
+                                            borderTop: '1px solid var(--glass-border)',
+                                            marginTop: '8px'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                            <div style={{
+                                                fontSize: '1.5rem',
+                                                fontWeight: '800',
+                                                color: metabolicAnalysis.metabolicRating > 7 ? 'var(--primary-500)' : 'var(--accent-gold)',
+                                                display: 'flex',
+                                                alignItems: 'baseline',
+                                                gap: '4px'
+                                            }}>
+                                                {metabolicAnalysis.metabolicRating}
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '400' }}>/ 10</span>
+                                            </div>
+                                            <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-main)' }}>Metabolic Score</div>
+                                        </div>
+
+                                        <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--text-main)', marginBottom: '16px' }}>
+                                            {metabolicAnalysis.insight}
+                                        </p>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '1px' }}>Coach's Recommendations</h4>
+                                            {metabolicAnalysis.nextSteps.map((step, idx) => (
+                                                <div key={idx} style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '10px',
+                                                    padding: '10px 14px',
+                                                    background: 'rgba(255,255,255,0.03)',
+                                                    borderRadius: '10px',
+                                                    fontSize: '0.9rem'
+                                                }}>
+                                                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary-500)' }} />
+                                                    {step}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+
                         {/* Summary Row */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <MetricCard label="Current" value={stats?.current} unit="kg" isPrimary />
