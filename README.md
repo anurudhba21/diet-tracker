@@ -16,6 +16,7 @@ A mobile-first, offline-ready application to track daily weight, meals, habits, 
 - **Smart Progress**: Visual cards for "Weight Lost", "Remaining", and "% Progress".
 - **Trend Chart**: Interactive line graph showing your journey.
 - **Streaks**: Gamified streak counter (Fire/Trophy) to keep you motivated.
+- **Workout Log**: Dedicated page for tracking exercises, sets, reps, and getting AI analysis.
 
 ### 💾 Data Ownership
 - **100% Offline**: Data stored in your browser (LocalStorage).
