@@ -195,5 +195,33 @@ export const api = {
         return await response.json();
     },
 
+    // Workouts (Routine Definitions)
+    getWorkouts: async (userId) => {
+        const response = await fetch(`${API_URL}/workouts?userId=${userId}`, { credentials: 'include' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        return data;
+    },
+
+    saveWorkout: async (workoutData) => {
+        const response = await fetch(`${API_URL}/workouts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(workoutData),
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to save workout routine');
+        return await response.json();
+    },
+
+    deleteWorkout: async (id) => {
+        const response = await fetch(`${API_URL}/workouts/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to delete workout routine');
+        return await response.json();
+    },
+
 
 };

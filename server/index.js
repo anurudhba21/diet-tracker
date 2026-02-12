@@ -289,6 +289,42 @@ app.delete('/api/habits/:id', authenticate, async (req, res) => {
     }
 });
 
+// --- Workout Routine Routes ---
+
+app.get('/api/workouts', authenticate, async (req, res) => {
+    const { userId } = req.query;
+    if (req.user.id !== userId) return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        const workouts = await db.getWorkouts(userId);
+        res.json(workouts);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/workouts', authenticate, async (req, res) => {
+    if (req.user.id !== req.body.userId) return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        const result = await db.saveWorkout(req.body);
+        res.json({ success: true, id: result.id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/workouts/:id', authenticate, async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.deleteWorkout(id);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
     app.listen(PORT, '0.0.0.0', () => {

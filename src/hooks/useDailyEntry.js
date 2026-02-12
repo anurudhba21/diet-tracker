@@ -103,29 +103,25 @@ export function useDailyEntry(dateStr) {
 
         const errors = [];
 
-        // Basic Validation
-        const weightVal = parseFloat(entry.weight);
-        if (!entry.weight || isNaN(weightVal) || weightVal < 30 || weightVal > 200) {
-            errors.push('weight');
+        // Basic Validation - Weight is now optional but must be valid if provided
+        let weightVal = null;
+        if (entry.weight && entry.weight.toString().trim() !== '') {
+            weightVal = parseFloat(entry.weight);
+            if (isNaN(weightVal) || weightVal < 30 || weightVal > 250) {
+                errors.push('weight');
+            }
         }
 
         if (errors.length > 0) {
+            alert("Please provide a valid weight (30-250kg) or leave it empty.");
             return { success: false, errors };
         }
-
-        // Strict Validation Removed: Allow partial saves
-        // const requiredFields = ['breakfast', 'mid_snack', 'lunch', 'evening', 'dinner'];
-        // requiredFields.forEach(field => {
-        //     if (!entry[field] || entry[field].trim() === '') {
-        //         errors.push(field);
-        //     }
-        // });
 
         // Prepare data for API (Un-flatten)
         const apiPayload = {
             userId: user.id,
             date: targetDate,
-            weight: entry.weight,
+            weight: weightVal, // Pass as number or null
             notes: entry.notes,
             meals: {
                 breakfast: entry.breakfast,
@@ -134,8 +130,8 @@ export function useDailyEntry(dateStr) {
                 mid_snack: entry.mid_snack,
                 evening: entry.evening
             },
-            habits: entry.habits, // Send habits object directly
-            workouts: entry.workouts // Send workouts
+            habits: entry.habits,
+            workouts: entry.workouts
         };
 
         try {
