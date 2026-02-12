@@ -67,12 +67,24 @@ export default function ProgressPage() {
     const handleHolisticAnalysis = async () => {
         setAnalyzingMetabolism(true);
         try {
+            // Shrink data for AI context
+            const workoutContext = Object.entries(heatmapEntries)
+                .map(([dateStr, entry]) => ({
+                    date: dateStr,
+                    completed: entry.workouts ? Object.values(entry.workouts).filter(w => w.completed).length : 0,
+                    volume: entry.workouts ? Object.values(entry.workouts).reduce((acc, w) => {
+                        return acc + (w.sets?.reduce((sAcc, s) => sAcc + (parseFloat(s.weight_kg || 0) * parseInt(s.reps || 0)), 0) || 0);
+                    }, 0) : 0
+                }))
+                .filter(d => d.completed > 0 || d.volume > 0)
+                .slice(-14); // Only last 14 days of data to keep context small
+
             const context = {
                 type: 'HOLISTIC_ANALYSIS',
                 data: {
                     goal: goal,
-                    weights: chartData.map(d => ({ date: d.date, weight: d.weight })),
-                    workouts: heatmapEntries // uses the full entries map which has workouts
+                    weights: chartData.slice(-14), // Last 14 weigh-ins
+                    workouts: workoutContext
                 }
             };
             const result = await chatService.processMessage("Run metabolic deep dive", context);

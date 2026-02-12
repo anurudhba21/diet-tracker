@@ -118,7 +118,16 @@ Return a JSON object with these EXACT keys:
 Do NOT return markdown code blocks. Just the raw JSON string.
 `;
             try {
-                if (!GEMINI_API_KEY) return { text: "Missing API Key for Analysis." };
+                if (!GEMINI_API_KEY) {
+                    return {
+                        text: "Missing API Key",
+                        analysis: {
+                            insight: "VITE_GEMINI_API_KEY is missing in your .env file.",
+                            metabolicRating: 0,
+                            nextSteps: ["Add API Key to .env", "Restart Development Server"]
+                        }
+                    };
+                }
 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
@@ -170,10 +179,16 @@ Do NOT return markdown code blocks. Just the raw JSON string.
             // Let's modify callGeminiAPI to support JSON mode or just ask for it.
 
             try {
-                // Determine logic: We can pass a flag or just do it inline?
-                // Inline for clarity since callGeminiAPI is generic text
-
-                if (!GEMINI_API_KEY) return { text: "Missing API Key for Analysis." };
+                if (!GEMINI_API_KEY) {
+                    return {
+                        text: "Missing API Key",
+                        analysis: {
+                            adherence: 0,
+                            trend: "N/A",
+                            recommendation: "Please set up your VITE_GEMINI_API_KEY to enable AI coaching."
+                        }
+                    };
+                }
 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
