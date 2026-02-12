@@ -3,12 +3,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
 
-// Initial dummy data for testing UI before backend is fully ready for this specific feature
-// In a real scenario, this would be empty or fetched from API
-const DEMO_WORKOUTS = [
-    { id: '1', name: 'Push Ups', sets: 3, reps: 15, days: ['Mon', 'Wed', 'Fri'] },
-    { id: '2', name: 'Squats', sets: 4, reps: 12, days: ['Tue', 'Thu'] }
-];
+// Initial dummy data removed for custom user creation
+const DEMO_WORKOUTS = [];
 
 export function useWorkouts() {
     const { user } = useAuth();
@@ -24,7 +20,7 @@ export function useWorkouts() {
             if (saved) {
                 setWorkouts(JSON.parse(saved));
             } else {
-                setWorkouts(DEMO_WORKOUTS);
+                setWorkouts([]);
             }
             setLoading(false);
         }, 500);

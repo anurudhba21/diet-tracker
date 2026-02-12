@@ -125,4 +125,14 @@ alter table goals enable row level security;
 
 -- Simple RLS policy: Users can only access their own data
 -- Note: internal backend service using service_role key bypasses RLS
+drop policy if exists "Users can same user data" on users;
 create policy "Users can same user data" on users for all using (auth.uid() = id);
+
+-- RLS for workout_sets
+alter table workout_sets enable row level security;
+drop policy if exists "Users can access their own workout sets" on workout_sets;
+create policy "Users can access their own workout sets" on workout_sets for all using (
+  auth.uid() = (select user_id from daily_entries 
+                join workout_logs on daily_entries.id = workout_logs.entry_id 
+                where workout_logs.id = workout_sets.workout_log_id)
+);
