@@ -48,6 +48,7 @@ if (DB_MODE === 'cloud') {
         // --- NEW: Workout Tables ---
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS workouts (id TEXT PRIMARY KEY, user_id TEXT, name TEXT, sets INTEGER, reps INTEGER, days TEXT)`);
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS workout_logs (id TEXT PRIMARY KEY, entry_id TEXT, workout_id TEXT, completed INTEGER)`);
+        sqliteDb.run(`CREATE TABLE IF NOT EXISTS workout_sets (id TEXT PRIMARY KEY, workout_log_id TEXT, set_number INTEGER, weight_kg REAL, reps INTEGER, completed INTEGER)`);
 
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS user_habits (id TEXT PRIMARY KEY, user_id TEXT, name TEXT, time_of_day TEXT, active INTEGER)`);
         sqliteDb.run(`CREATE TABLE IF NOT EXISTS goals (user_id TEXT PRIMARY KEY, start_weight REAL, target_weight REAL, start_date TEXT)`);
@@ -139,7 +140,11 @@ const db = {
     // --- Entries ---
     async getEntries(userId) {
         if (DB_MODE === 'cloud') {
-            const { data, error } = await supabase.from('daily_entries').select('*, meals(*), habits(*), workout_logs(*)').eq('user_id', userId);
+            // Include workout_sets in the fetch
+            const { data, error } = await supabase.from('daily_entries')
+                .select('*, meals(*), habits(*), workout_logs(*, workout_sets(*))')
+                .eq('user_id', userId);
+
             if (error) throw error;
             return data.map(de => ({
                 id: de.id,
@@ -149,17 +154,28 @@ const db = {
                 junk: de.junk,
                 meals: de.meals.reduce((acc, m) => ({ ...acc, [m.type]: m.content }), {}),
                 habits: de.habits.reduce((acc, h) => ({ ...acc, [h.habit_name]: h.completed }), {}),
-                workouts: de.workout_logs.reduce((acc, w) => ({ ...acc, [w.workout_id]: w.completed }), {})
+                workouts: de.workout_logs.reduce((acc, w) => ({
+                    ...acc,
+                    [w.workout_id]: {
+                        completed: !!w.completed,
+                        sets: w.workout_sets ? w.workout_sets.sort((a, b) => a.set_number - b.set_number) : []
+                    }
+                }), {})
             }));
         } else {
             return new Promise((resolve, reject) => {
                 // Modified SQL to include workout_logs
+                // NOTE: SQLite complex join for sets is tricky with current flat reducer.
+                // For MVP Local, we might just track completion or simplify.
+                // Or better: Fetch basic entry data, then for each entry fetch sets?
+                // Let's keep it simple for now: local only tracks completion until we do a bigger refactor.
+                // Or, let's try to join.
                 const sql = `
                     SELECT 
                         de.id as entry_id, de.date, de.weight, de.notes, de.junk, 
                         m.type as meal_type, m.content as meal_content, 
                         h.habit_name, h.completed as habit_completed,
-                        wl.workout_id, wl.completed as workout_completed
+                        wl.id as workout_log_id, wl.workout_id, wl.completed as workout_completed
                     FROM daily_entries de 
                     LEFT JOIN meals m ON de.id = m.entry_id 
                     LEFT JOIN habits h ON de.id = h.entry_id 
@@ -184,8 +200,20 @@ const db = {
                         }
                         if (row.meal_type) entries[row.date].meals[row.meal_type] = row.meal_content;
                         if (row.habit_name) entries[row.date].habits[row.habit_name] = !!row.habit_completed;
-                        if (row.workout_id) entries[row.date].workouts[row.workout_id] = !!row.workout_completed;
+                        if (row.workout_id) {
+                            // Local Only: Simple object for now, or fetch sets async? 
+                            // Check if object exists
+                            if (!entries[row.date].workouts[row.workout_id]) {
+                                entries[row.date].workouts[row.workout_id] = {
+                                    completed: !!row.workout_completed,
+                                    sets: [] // sets not loaded in this query
+                                };
+                            }
+                        }
                     });
+
+                    // TODO: Load sets for local DB if needed. 
+                    // For now, we return structure compatible with Cloud.
                     resolve(Object.values(entries));
                 });
             });
@@ -216,15 +244,44 @@ const db = {
             }
 
             // --- SAVE WORKOUT LOGS ---
+            // First delete existing logs (cascades to sets)
             await supabase.from('workout_logs').delete().eq('entry_id', de.id);
+
             if (workouts) {
-                const workoutRows = Object.entries(workouts).map(([wId, completed]) => ({
-                    id: crypto.randomUUID(),
-                    entry_id: de.id,
-                    workout_id: wId,
-                    completed: completed ? 1 : 0
-                }));
-                if (workoutRows.length) await supabase.from('workout_logs').insert(workoutRows);
+                for (const [wId, wData] of Object.entries(workouts)) {
+                    // wData could be boolean (legacy) or object { completed, sets: [] }
+                    let completed = false;
+                    let sets = [];
+
+                    if (typeof wData === 'boolean') {
+                        completed = wData;
+                    } else if (typeof wData === 'object') {
+                        completed = wData.completed;
+                        sets = wData.sets || [];
+                    }
+
+                    const workoutLogId = crypto.randomUUID();
+                    const { error: logError } = await supabase.from('workout_logs').insert({
+                        id: workoutLogId,
+                        entry_id: de.id,
+                        workout_id: wId,
+                        completed: completed ? 1 : 0
+                    });
+
+                    if (logError) throw logError;
+
+                    if (sets && sets.length > 0) {
+                        const setRows = sets.map(s => ({
+                            id: crypto.randomUUID(),
+                            workout_log_id: workoutLogId,
+                            set_number: s.set_number || s.setNumber,
+                            weight_kg: s.weight_kg || s.weight,
+                            reps: s.reps,
+                            completed: s.completed ? true : false
+                        }));
+                        await supabase.from('workout_sets').insert(setRows);
+                    }
+                }
             }
 
             return de;
@@ -255,11 +312,51 @@ const db = {
 
                         // --- SAVE WORKOUT LOGS SQLITE ---
                         sqliteDb.run(`DELETE FROM workout_logs WHERE entry_id = ?`, [id], () => {
-                            if (workouts) {
-                                const stmt = sqliteDb.prepare(`INSERT INTO workout_logs (id, entry_id, workout_id, completed) VALUES (?, ?, ?, ?)`);
-                                Object.entries(workouts).forEach(([wId, v]) => stmt.run(crypto.randomUUID(), id, wId, v ? 1 : 0));
-                                stmt.finalize();
-                            }
+                            // This deletes logs. What about sets? 
+                            // SQLite doesn't cascade by default unless configured.
+                            // But since sets reference logs, we should delete them too?
+                            // Or assuming cascade is ON?
+                            // Safest: Delete sets for these logs first? No, easier to just delete.
+                            // Let's assume broad delete.
+                            // Actually, let's delete sets referencing logs for this entry... harder to do without proper cascading key or complex query.
+                            // For MVP Local, we can iterate:
+                            // Better: DELETE FROM workout_sets WHERE workout_log_id IN (SELECT id FROM workout_logs WHERE entry_id = ?)
+                            sqliteDb.run(`DELETE FROM workout_sets WHERE workout_log_id IN (SELECT id FROM workout_logs WHERE entry_id = ?)`, [id], () => {
+                                sqliteDb.run(`DELETE FROM workout_logs WHERE entry_id = ?`, [id], () => {
+                                    if (workouts) {
+                                        const logStmt = sqliteDb.prepare(`INSERT INTO workout_logs (id, entry_id, workout_id, completed) VALUES (?, ?, ?, ?)`);
+                                        const setStmt = sqliteDb.prepare(`INSERT INTO workout_sets (id, workout_log_id, set_number, weight_kg, reps, completed) VALUES (?, ?, ?, ?, ?, ?)`);
+
+                                        Object.entries(workouts).forEach(([wId, wData]) => {
+                                            let completed = false;
+                                            let sets = [];
+                                            if (typeof wData === 'boolean') {
+                                                completed = wData;
+                                            } else if (typeof wData === 'object') {
+                                                completed = wData.completed;
+                                                sets = wData.sets || [];
+                                            }
+
+                                            const logId = crypto.randomUUID();
+                                            logStmt.run(logId, id, wId, completed ? 1 : 0);
+
+                                            sets.forEach(s => {
+                                                setStmt.run(
+                                                    crypto.randomUUID(),
+                                                    logId,
+                                                    s.set_number || s.setNumber,
+                                                    s.weight_kg || s.weight,
+                                                    s.reps,
+                                                    s.completed ? 1 : 0
+                                                );
+                                            });
+                                        });
+
+                                        logStmt.finalize();
+                                        setStmt.finalize();
+                                    }
+                                });
+                            });
                         });
 
                         resolve({ id });

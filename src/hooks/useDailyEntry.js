@@ -10,6 +10,7 @@ const INITIAL_STATE = {
     evening: '',
     dinner: '',
     habits: {}, // Dynamic habits: { "Habit Name": true/false }
+    workouts: {}, // Workouts: { "workoutId": { completed, sets: [] } }
     notes: ''
 };
 
@@ -66,12 +67,14 @@ export function useDailyEntry(dateStr) {
                     // Safe access to nested properties
                     const meals = saved.meals || {};
                     const habits = saved.habits || {};
+                    const workouts = saved.workouts || {}; // Load workouts
 
                     const flatEntry = {
                         ...INITIAL_STATE,
                         ...saved,
                         ...meals,
                         habits: habits, // Load habits directly
+                        workouts: workouts, // Load workouts directly
                         junk: !!saved.junk // Ensure boolean
                     };
 
@@ -131,7 +134,8 @@ export function useDailyEntry(dateStr) {
                 mid_snack: entry.mid_snack,
                 evening: entry.evening
             },
-            habits: entry.habits // Send habits object directly
+            habits: entry.habits, // Send habits object directly
+            workouts: entry.workouts // Send workouts
         };
 
         try {

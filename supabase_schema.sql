@@ -66,12 +66,33 @@ create table if not exists workouts (
   created_at timestamp with time zone default now()
 );
 
--- Workout Logs (Daily Log)
+-- Workout Logs (Daily Log - represents a session of a specific workout)
+-- Actually, let's refine this. 
+-- 'workouts' defines the PLAN (e.g. "Chest Day").
+-- 'daily_entries' links to a date.
+-- We need to link specific EXERCISES done on a day.
+-- Current Schema: workout_logs links entry_id <-> workout_id. 
+-- BUT 'workouts' table seems to be a mix of "Routine" and "Exercise". 
+-- Let's check `workouts` table again: name, sets, reps, days. Use Case: "Pushups, 3 sets, 12 reps, Mon/Wed".
+-- So `workflow_logs` currently tracks if "Pushups" was done on "Monday".
+
+-- New Requirement: Track actual sets.
 create table if not exists workout_logs (
   id uuid primary key default uuid_generate_v4(),
   entry_id uuid references daily_entries(id) on delete cascade,
   workout_id uuid references workouts(id) on delete cascade,
   completed integer default 0,
+  created_at timestamp with time zone default now()
+);
+
+-- NEW: Detailed Sets
+create table if not exists workout_sets (
+  id uuid primary key default uuid_generate_v4(),
+  workout_log_id uuid references workout_logs(id) on delete cascade,
+  set_number integer not null,
+  weight_kg real,
+  reps integer,
+  completed boolean default false,
   created_at timestamp with time zone default now()
 );
 
