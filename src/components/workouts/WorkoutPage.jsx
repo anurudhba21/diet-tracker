@@ -41,24 +41,26 @@ export default function WorkoutPage() {
 
     // Calculate Summary Metrics
     const summary = useMemo(() => {
-        if (!entry.workouts) return { exercises: 0, sets: 0, volume: 0 };
+        if (!entry || !entry.workouts) return { exercises: 0, sets: 0, volume: 0 };
         const workoutData = Object.values(entry.workouts);
         const exercises = workoutData.length;
         let totalSets = 0;
         let totalVolume = 0;
 
         workoutData.forEach(w => {
-            if (w.sets && Array.isArray(w.sets)) {
+            if (w && w.sets && Array.isArray(w.sets)) {
                 totalSets += w.sets.length;
                 w.sets.forEach(s => {
                     const weight = parseFloat(s.weight_kg || s.weight || 0);
                     const reps = parseInt(s.reps || 0);
-                    totalVolume += weight * reps;
+                    if (!isNaN(weight) && !isNaN(reps)) {
+                        totalVolume += weight * reps;
+                    }
                 });
             }
         });
 
-        return { exercises, sets: totalSets, volume: Math.round(totalVolume) };
+        return { exercises, sets: totalSets, volume: Math.round(totalVolume) || 0 };
     }, [entry.workouts]);
 
     const handleAnalyze = async () => {

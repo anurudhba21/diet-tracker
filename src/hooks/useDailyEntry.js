@@ -33,6 +33,7 @@ export function useDailyEntry(dateStr) {
     const [entry, setEntry] = useState(INITIAL_STATE);
     const [hasExistingData, setHasExistingData] = useState(false);
     const [previousWeight, setPreviousWeight] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [isSaved, setIsSaved] = useState(false);
     const targetDate = dateStr || new Date().toISOString().split('T')[0];
 
@@ -41,6 +42,7 @@ export function useDailyEntry(dateStr) {
         if (!api) return;
 
         const loadEntry = async () => {
+            setLoading(true);
             console.log("Loading entry for:", user.id, targetDate);
             try {
                 // For MVP simplicity, we fetch all entries and find the one matching the date.
@@ -87,6 +89,8 @@ export function useDailyEntry(dateStr) {
                 console.error("Failed to load entry", err);
                 // Fallback to initial state on error to prevent blank screen
                 setEntry(INITIAL_STATE);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -167,8 +171,7 @@ export function useDailyEntry(dateStr) {
         updateEntry,
         saveEntry,
         deleteEntry,
-        isSaved,
-        isSaved,
+        loading,
         hasExistingData,
         previousWeight
     };
