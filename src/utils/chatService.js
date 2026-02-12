@@ -48,8 +48,10 @@ ${JSON.stringify(context, null, 2)}
         return { text };
 
     } catch (error) {
-        console.error("Gemini API Error:", error);
-        return { text: "My brain is having trouble connecting to the cloud right now. Try again later!" };
+        console.error("Gemini API Error details:", error);
+        // Surface the specific error if it's a string, otherwise use generic
+        const errorMessage = error.message || "My brain is having trouble connecting to the cloud right now.";
+        return { text: `${errorMessage} Please check your API key or connection.` };
     }
 }
 
