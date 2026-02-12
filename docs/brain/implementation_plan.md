@@ -45,6 +45,23 @@ Refactor the app into three distinct, focused pages that handle both recording a
     - "Great Workout!" badge.
     - Toggle between summary and edit view.
 
+## Holistic LLM Analysis (Workouts + Weight)
+
+Combine workout performance data with weight trends to give the user metabolic insights.
+
+### chatService.js Enhancements
+- **New Analysis Type**: Support `HOLISTIC_ANALYSIS`.
+- **System Prompt**: instructing Gemini to find correlations between workout volume/frequency and weight change.
+- **Output Schema**: JSON containing:
+  - `insight`: Long-term trend correlation.
+  - `metabolicRating`: 1-10 score.
+  - `nextSteps`: Clear actionable advice.
+
+### ProgressPage.jsx Integration
+- **Gather Data**: Collect `weights`, `workouts`, `stats`, and `goal` data into a single context object.
+- **UI Trigger**: Add a "Metabolic Deep Dive" banner in the Progress section.
+- **Result Display**: A dedicated "Coach's Deep Dive" panel with rich formatting.
+
 ## UI Polish & Layout Fixes
 
 ### GoalPieChart Sizing & Legend
@@ -58,6 +75,9 @@ Refactor the app into three distinct, focused pages that handle both recording a
 - **Files**: [BMICard.jsx](file:///c:/Users/anuru/.gemini/antigravity/scratch/diet-tracker-mvp/src/components/analytics/BMICard.jsx)
 
 ## Verification Plan
+- [ ] Verify LLM correctly identifies correlation (e.g., high volume = faster loss).
+- [ ] Test UI for loading states and error handling.
+- [ ] Ensure formatting of insights is clear and professional.
 - [ ] Toggle between "Meals & Weight" and "Workouts" tabs.
 - [ ] Verify that weight-related charts stay in the Meals section.
 - [ ] Verify that training volume charts are prominent in the Workouts section.

@@ -34,3 +34,4 @@
 - [x] Fix /workouts page crash (Restore missing states/functions) <!-- id: 36 -->
 - [x] Implement Workout Session Summary View <!-- id: 35 -->
 - [x] Fix Progress Page UI (GoalPieChart legend, BMI Card layout) <!-- id: 37 -->
+- [x] Implement LLM Workout & Weight Analysis (Holistic Progress) <!-- id: 38 -->
