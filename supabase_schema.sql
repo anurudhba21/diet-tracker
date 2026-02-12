@@ -1,72 +1,107 @@
--- 1. Create Users Table
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    name TEXT,
-    phone TEXT,
-    height_cm INTEGER,
-    dob DATE,
-    gender TEXT,
-    avatar_id TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Enable UUID extension
+create extension if not exists "uuid-ossp";
+
+-- Users Table
+create table if not exists users (
+  id uuid primary key default uuid_generate_v4(),
+  email text unique,
+  password_hash text,
+  name text,
+  phone text,
+  height_cm integer,
+  dob text,
+  gender text,
+  avatar_id text,
+  created_at timestamp with time zone default now()
 );
 
--- 2. Create Daily Entries Table (Added junk column for tracking junk food)
-CREATE TABLE IF NOT EXISTS daily_entries (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    date DATE NOT NULL,
-    weight REAL,
-    notes TEXT,
-    junk INTEGER DEFAULT 0, -- Track junk food consumption
-    UNIQUE(user_id, date)
+-- Daily Entries Table
+create table if not exists daily_entries (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references users(id) on delete cascade,
+  date text not null,
+  weight real,
+  notes text,
+  junk integer default 0,
+  created_at timestamp with time zone default now(),
+  unique(user_id, date)
 );
 
--- 3. Create Meals Table
-CREATE TABLE IF NOT EXISTS meals (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    entry_id UUID REFERENCES daily_entries(id) ON DELETE CASCADE,
-    type TEXT NOT NULL, -- breakfast, lunch, dinner, snack
-    content TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Meals Table
+create table if not exists meals (
+  id uuid primary key default uuid_generate_v4(),
+  entry_id uuid references daily_entries(id) on delete cascade,
+  type text, -- 'breakfast', 'lunch', 'dinner', 'snack'
+  content text,
+  created_at timestamp with time zone default now()
 );
 
--- 4. Create Habits Table (Daily Log)
-CREATE TABLE IF NOT EXISTS habits (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    entry_id UUID REFERENCES daily_entries(id) ON DELETE CASCADE,
-    habit_name TEXT NOT NULL,
-    completed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Habits Table (Daily Log)
+create table if not exists habits (
+  id uuid primary key default uuid_generate_v4(),
+  entry_id uuid references daily_entries(id) on delete cascade,
+  habit_name text,
+  completed integer default 0, -- 0 or 1
+  created_at timestamp with time zone default now()
 );
 
--- 5. Create Goals Table
-CREATE TABLE IF NOT EXISTS goals (
-    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    start_weight REAL,
-    target_weight REAL,
-    start_date DATE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- User Habits (Definitions)
+create table if not exists user_habits (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references users(id) on delete cascade,
+  name text not null,
+  time_of_day text, -- 'morning', 'afternoon', 'evening', 'any'
+  active integer default 1,
+  created_at timestamp with time zone default now()
 );
 
--- 6. Create User Habits Table (Definitions)
-CREATE TABLE IF NOT EXISTS user_habits (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name TEXT NOT NULL,
-    time_of_day TEXT DEFAULT 'any',
-    active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+-- Workouts (Definitions)
+create table if not exists workouts (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references users(id) on delete cascade,
+  name text not null,
+  sets integer,
+  reps integer,
+  days text, -- JSON string e.g., '["Mon", "Wed"]'
+  created_at timestamp with time zone default now()
 );
 
--- 7. Create OTPS Table (For phone auth)
-CREATE TABLE IF NOT EXISTS otps (
-    phone TEXT PRIMARY KEY,
-    code TEXT,
-    expires_at BIGINT -- Using BIGINT for JS Date.now() timestamp
+-- Workout Logs (Daily Log)
+create table if not exists workout_logs (
+  id uuid primary key default uuid_generate_v4(),
+  entry_id uuid references daily_entries(id) on delete cascade,
+  workout_id uuid references workouts(id) on delete cascade,
+  completed integer default 0,
+  created_at timestamp with time zone default now()
 );
 
--- Add index for performance
-CREATE INDEX IF NOT EXISTS idx_user_habits_user_id ON user_habits(user_id);
-CREATE INDEX IF NOT EXISTS idx_daily_entries_user_id ON daily_entries(user_id);
+-- Goals Table
+create table if not exists goals (
+  user_id uuid primary key references users(id) on delete cascade,
+  start_weight real,
+  target_weight real,
+  start_date text,
+  created_at timestamp with time zone default now()
+);
+
+-- OTPs Table
+create table if not exists otps (
+  phone text primary key,
+  code text not null,
+  expires_at bigint not null,
+  created_at timestamp with time zone default now()
+);
+
+-- RLS Policies (Optional but recommended for Supabase)
+alter table users enable row level security;
+alter table daily_entries enable row level security;
+alter table meals enable row level security;
+alter table habits enable row level security;
+alter table user_habits enable row level security;
+alter table workouts enable row level security;
+alter table workout_logs enable row level security;
+alter table goals enable row level security;
+
+-- Simple RLS policy: Users can only access their own data
+-- Note: internal backend service using service_role key bypasses RLS
+create policy "Users can same user data" on users for all using (auth.uid() = id);
