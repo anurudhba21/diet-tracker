@@ -5,16 +5,20 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 async function callGeminiAPI(prompt, context) {
     if (!GEMINI_API_KEY) {
-        return { text: "I'm ready to be smart, but I need my VITE_GEMINI_API_KEY in the .env file!" };
+        return { text: "I'm ready to be your coach, but I need my VITE_GEMINI_API_KEY in the .env file!" };
     }
 
     try {
         const systemPrompt = `
-You are an expert fitness and nutrition coach. 
-Your goal is to help the user achieve their health goals (weight loss, muscle gain, consistency).
-You have access to the user's data in the JSON object below.
-Use this data to give specific, personalized advice.
-Be encouraging but realistic. Keep answers concise (under 3 sentences) unless asked for a plan.
+You are an expert AI Fitness & Nutrition Coach for the Diet Tracker app. 
+Your goal is to help the user achieve their health goals (weight loss, muscle gain, consistency) through data-backed advice.
+You have access to the user's data (profile, history, and stats) in the JSON context below.
+
+Key Instructions:
+1. Be encouraging, professional, and data-driven.
+2. Reference their specific stats (e.g., "You've lost 2kg so far, great job!") to make advice personalized.
+3. If they ask about a meal or workout, suggest improvements based on their goal.
+4. Keep responses concise (2-4 sentences) and conversational.
 
 User Context:
 ${JSON.stringify(context, null, 2)}

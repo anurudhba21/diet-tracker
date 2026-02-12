@@ -100,8 +100,8 @@ export default function Chatbot() {
                 whileTap={{ scale: 0.95 }}
                 style={{
                     position: 'fixed',
-                    bottom: '100px', // Above nav bar
-                    right: '20px',
+                    bottom: '120px', // Adjusted to clear nav bar
+                    right: '25px',
                     width: '60px',
                     height: '60px',
                     borderRadius: '50%',
@@ -168,7 +168,7 @@ export default function Chatbot() {
                             gap: '10px'
                         }}>
                             <Bot size={20} color="var(--primary-500)" />
-                            <h3 style={{ fontSize: '1rem', margin: 0 }}>Diet Assistant</h3>
+                            <h3 style={{ fontSize: '1rem', margin: 0 }}>AI Coach</h3>
                         </div>
 
                         {/* Messages */}

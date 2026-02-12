@@ -19,6 +19,7 @@ import { Soup, LayoutDashboard, Dumbbell } from 'lucide-react'
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { App as CapacitorApp } from '@capacitor/app';
+import Chatbot from './components/chat/Chatbot';
 
 // Wrapper to ensure we have a user (which AuthContext guarantees after loading)
 function RequireUser({ children }) {
@@ -155,6 +156,8 @@ function AppContent() {
                                     <NavButton icon={Dumbbell} label="Workouts" to="/workouts" />
                                     <NavButton icon={LayoutDashboard} label="Progress" to="/analytics" />
                                 </nav>
+
+                                <Chatbot />
                             </Layout>
                         </ThemeProvider>
                     } />
