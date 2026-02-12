@@ -24,6 +24,13 @@ export default function WorkoutPage() {
         }
     }, [entryLoading, entry.workouts]);
 
+    const [showManager, setShowManager] = useState(false);
+    const [viewMode, setViewMode] = useState('checklist'); // 'checklist' | 'stats'
+
+    // AI Analysis State
+    const [analyzing, setAnalyzing] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState(null);
+
     const changeDate = (days) => {
         const d = new Date(date);
         d.setDate(d.getDate() + days);
@@ -54,9 +61,30 @@ export default function WorkoutPage() {
         return { exercises, sets: totalSets, volume: Math.round(totalVolume) };
     }, [entry.workouts]);
 
-    // ... handleAnalyze implementation ...
-
-    // ... handleAnalyze implementation ...
+    const handleAnalyze = async () => {
+        setAnalyzing(true);
+        setAnalysisResult(null);
+        try {
+            const context = {
+                type: 'WORKOUT_ANALYSIS',
+                data: {
+                    date,
+                    completed: entry.workouts
+                        ? Object.values(entry.workouts).filter(v => v.completed).length
+                        : 0,
+                    summary
+                }
+            };
+            const response = await chatService.processMessage("Analyze my workout", context);
+            if (response.analysis) {
+                setAnalysisResult(response.analysis);
+            }
+        } catch (error) {
+            console.error("Analysis failed", error);
+        } finally {
+            setAnalyzing(false);
+        }
+    };
 
 
     if (entryLoading) {
@@ -204,7 +232,56 @@ export default function WorkoutPage() {
             {/* Checklist View */}
             {viewMode === 'checklist' && (
                 <div style={{ marginBottom: '24px' }}>
-                    {/* ... (AI analysis parts) ... */}
+                    {/* AI Analysis Button */}
+                    <motion.div
+                        className="glass-panel"
+                        style={{ padding: '16px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))' }}
+                        whileHover={{ scale: 1.01 }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ padding: '10px', background: 'var(--primary-glow)', borderRadius: '12px', color: '#fff' }}>
+                                <BarChart3 size={24} />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1rem' }}>AI Workout Coach</h3>
+                                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Get insights on your routine</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleAnalyze}
+                            disabled={analyzing}
+                            className="btn-sm"
+                            style={{ background: 'var(--primary-500)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}
+                        >
+                            {analyzing ? 'Analyzing...' : 'Analyze'}
+                        </button>
+                    </motion.div>
+
+                    {/* Analysis Result */}
+                    <AnimatePresence>
+                        {analysisResult && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="glass-panel"
+                                style={{ marginBottom: '24px', padding: '20px', borderLeft: '4px solid var(--primary-500)' }}
+                            >
+                                <h3 style={{ margin: '0 0 12px 0', fontSize: '1.1rem' }}>Coach Insights</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Adherence</div>
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--primary-400)' }}>{analysisResult.adherence}%</div>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px' }}>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Trend</div>
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{analysisResult.trend}</div>
+                                    </div>
+                                </div>
+                                <p style={{ margin: 0, lineHeight: 1.6, fontSize: '0.95rem' }}>{analysisResult.recommendation}</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                         <h2 style={{ fontSize: '1.2rem', margin: 0 }}>Today's Plan</h2>
