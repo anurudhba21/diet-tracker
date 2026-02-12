@@ -1,0 +1,36 @@
+
+- [x] Push to GitHub <!-- id: 5 -->
+- [x] Generate Supabase SQL Schema (`supabase_schema.sql`) <!-- id: 6 -->
+- [x] Create Data Migration Script (SQLite -> Supabase) <!-- id: 7 -->
+- [x] Push to GitHub (Supabase Migration) <!-- id: 8 -->
+- [x] Refactor Workout UI (Dedicated Page) <!-- id: 9 -->
+- [x] Refactor Workout UI (Dedicated Page) <!-- id: 9 -->
+- [x] Push to GitHub (Workout Refactor) <!-- id: 10 -->
+- [x] Design Workout Data Model (Sets/Reps/Weight) <!-- id: 11 -->
+- [x] Update Database Schema (`workout_sets`) <!-- id: 12 -->
+- [x] Update Backend Logic (save/load sets) <!-- id: 13 -->
+- [x] Update Frontend UI (Detailed Logging) <!-- id: 14 -->
+- [x] Push to GitHub (Detailed Logging) <!-- id: 15 -->
+- [x] Remove default workouts (allow custom creation) <!-- id: 16 -->
+- [x] Push to GitHub (Custom Workouts) <!-- id: 17 -->
+
+## AI & Data Analysis
+- [x] Implement Data Aggregator (`useAggregatedData`) <!-- id: 18 -->
+- [x] Enhance Chat Service (Context Awareness) <!-- id: 19 -->
+- [x] Build Chat UI (if needed) or Update Existing <!-- id: 20 -->
+- [x] Add Visual Charts (Volume/Progress) <!-- id: 21 -->
+- [x] Integrate Real Gemini API for Analysis <!-- id: 23 -->
+- [x] Verify & Push <!-- id: 24 -->
+- [x] Debug Vite Startup Failure <!-- id: 25 -->
+- [x] Final Application Verification <!-- id: 26 -->
+- [x] Refactor Navigation (Meals, Workouts, Progress) <!-- id: 27 -->
+- [x] Integrate History into specific pages <!-- id: 28 -->
+- [x] Verify Date-Specific Persistence <!-- id: 29 -->
+- [x] Separate Meal and Workout Progress in Analytics <!-- id: 30 -->
+- [x] Fix WorkoutStats ReferenceError in ProgressPage <!-- id: 31 -->
+- [x] Implement Manual Exercise Selection in Workouts <!-- id: 32 -->
+- [x] Push changes to GitHub <!-- id: 33 -->
+- [x] Debug "Failed to save entry" on Vercel <!-- id: 34 -->
+- [x] Fix /workouts page crash (Restore missing states/functions) <!-- id: 36 -->
+- [x] Implement Workout Session Summary View <!-- id: 35 -->
+- [x] Fix Progress Page UI (GoalPieChart legend, BMI Card layout) <!-- id: 37 -->
