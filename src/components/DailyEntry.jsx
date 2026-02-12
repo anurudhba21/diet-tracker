@@ -5,12 +5,8 @@ import WeightInput from './inputs/WeightInput';
 import MealInputs from './inputs/MealInputs';
 import HabitToggles from './inputs/HabitToggles';
 import NotesInput from './inputs/NotesInput';
-import WorkoutChecklist from './workouts/WorkoutChecklist';
-import WorkoutManager from './workouts/WorkoutManager';
-import { chatService } from '../utils/chatService';
-
 import confetti from 'canvas-confetti';
-import { CheckCircle, Edit2, AlertTriangle, Dumbbell, Sparkles } from 'lucide-react';
+import { CheckCircle, Edit2, AlertTriangle } from 'lucide-react';
 import { analytics } from '../utils/analytics';
 
 export default function DailyEntry({ date }) {
@@ -62,30 +58,6 @@ export default function DailyEntry({ date }) {
         }
     }, [hasExistingData]);
 
-    const [showWorkoutManager, setShowWorkoutManager] = useState(false);
-    const [aiAnalysis, setAiAnalysis] = useState(null);
-    const [analyzing, setAnalyzing] = useState(false);
-
-    const handleAnalyzeWorkouts = async () => {
-        setAnalyzing(true);
-        try {
-            // Mock context with current entry data
-            const context = {
-                type: 'WORKOUT_ANALYSIS',
-                entry: entry,
-                previousWeight: previousWeight
-            };
-            const response = await chatService.processMessage("Analyze my workout progress", context);
-            if (response.analysis) {
-                setAiAnalysis(response.analysis);
-            }
-        } catch (e) {
-            console.error("Analysis failed", e);
-        } finally {
-            setAnalyzing(false);
-        }
-    };
-
     // Anomaly Detection
     const [anomaly, setAnomaly] = useState(null);
     useEffect(() => {
@@ -107,8 +79,6 @@ export default function DailyEntry({ date }) {
     const handleHabitChange = (id, value) => {
         updateEntry({ [id]: value });
     };
-
-
 
     const saveEntry = async () => {
         const result = await saveToStorage();
@@ -346,82 +316,6 @@ export default function DailyEntry({ date }) {
                 data={entry}
                 onChange={handleHabitChange}
             />
-
-            {/* Workout Section */}
-            <div style={{ marginTop: '24px', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 className="text-gradient" style={{ fontSize: '1.2rem', margin: 0 }}>Workouts</h3>
-                    <button
-                        onClick={() => setShowWorkoutManager(true)}
-                        className="btn-ghost"
-                        style={{ padding: '6px 12px', fontSize: '0.8rem', display: 'flex', gap: '6px' }}
-                    >
-                        <Edit2 size={14} /> Manage
-                    </button>
-                </div>
-
-                <WorkoutChecklist
-                    date={selectedDate}
-                    entry={entry}
-                    updateEntry={updateEntry}
-                />
-
-                <button
-                    onClick={handleAnalyzeWorkouts}
-                    disabled={analyzing}
-                    className="glass-panel"
-                    style={{
-                        width: '100%',
-                        padding: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px',
-                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))',
-                        border: '1px solid rgba(139, 92, 246, 0.3)',
-                        cursor: 'pointer',
-                        color: 'var(--text-main)',
-                        transition: 'all 0.2s'
-                    }}
-                >
-                    <Sparkles size={18} color="#c084fc" />
-                    {analyzing ? 'Analyzing...' : 'AI Workout Analysis'}
-                </button>
-
-                {aiAnalysis && (
-                    <div style={{ marginTop: '16px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', borderLeft: '4px solid #c084fc' }}>
-                        <div style={{ fontWeight: 600, marginBottom: '8px', color: '#e9d5ff' }}>AI Insights:</div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.9rem' }}>
-                            <span>Adherence: <b>{aiAnalysis.adherence_score}%</b></span>
-                            <span>Trend: <b>{aiAnalysis.trend_analysis}</b></span>
-                        </div>
-                        <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                            "{aiAnalysis.recommendation}"
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {showWorkoutManager && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0,0,0,0.8)',
-                    backdropFilter: 'blur(4px)',
-                    zIndex: 100,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '20px'
-                }}>
-                    <div style={{ width: '100%', maxWidth: '500px' }}>
-                        <WorkoutManager onClose={() => setShowWorkoutManager(false)} />
-                    </div>
-                </div>
-            )}
 
             <NotesInput
                 value={entry.notes}

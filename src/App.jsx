@@ -14,7 +14,8 @@ import PrivacyPolicy from './components/legal/PrivacyPolicy'
 import TermsOfService from './components/legal/TermsOfService'
 import NavButton from './components/NavButton'
 import PageTransition from './components/PageTransition'
-import { Book, LayoutDashboard, PlusCircle } from 'lucide-react'
+import WorkoutPage from './components/workouts/WorkoutPage'
+import { Book, LayoutDashboard, PlusCircle, Dumbbell } from 'lucide-react'
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -130,6 +131,9 @@ function AppContent() {
                                     <Route path="/" element={
                                         <PageTransition><DailyEntry /></PageTransition>
                                     } />
+                                    <Route path="/workouts" element={
+                                        <PageTransition><WorkoutPage /></PageTransition>
+                                    } />
                                     <Route path="/history" element={
                                         <PageTransition><History /></PageTransition>
                                     } />
@@ -148,6 +152,7 @@ function AppContent() {
                                 {/* Navigation Bar */}
                                 <nav className="nav-island">
                                     <NavButton icon={PlusCircle} label="Track" to="/" />
+                                    <NavButton icon={Dumbbell} label="Workouts" to="/workouts" />
                                     <NavButton icon={Book} label="History" to="/history" />
                                     <NavButton icon={LayoutDashboard} label="Progress" to="/analytics" />
                                 </nav>
