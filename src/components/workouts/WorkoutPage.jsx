@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ChevronLeft, ChevronRight, Calendar, Dumbbell, BarChart3 } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Calendar, Dumbbell, BarChart3, CheckCircle } from 'lucide-react';
 import { useDailyEntry } from '../../hooks/useDailyEntry';
 import WorkoutChecklist from './WorkoutChecklist';
 import WorkoutManager from './WorkoutManager';
@@ -13,7 +13,7 @@ import WorkoutStats from '../analytics/WorkoutStats';
 
 export default function WorkoutPage() {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const { entry, updateEntry, loading: entryLoading } = useDailyEntry(date);
+    const { entry, updateEntry, saveEntry, isSaved, loading: entryLoading } = useDailyEntry(date);
     const [showManager, setShowManager] = useState(false);
     const [viewMode, setViewMode] = useState('checklist'); // 'checklist' | 'stats'
 
@@ -184,7 +184,33 @@ export default function WorkoutPage() {
                     {entryLoading ? (
                         <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading...</div>
                     ) : (
-                        <WorkoutChecklist date={date} entry={entry} updateEntry={updateEntry} />
+                        <>
+                            <WorkoutChecklist date={date} entry={entry} updateEntry={updateEntry} />
+
+                            {/* Save Button */}
+                            <div style={{ marginTop: '32px' }}>
+                                <button
+                                    className="btn"
+                                    onClick={async () => {
+                                        const result = await saveEntry();
+                                        if (result.success) {
+                                            // Optional: Handle success (e.g. feedback)
+                                        }
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        background: isSaved ? 'var(--primary-600)' : 'linear-gradient(135deg, var(--primary-500), var(--primary-600))'
+                                    }}
+                                >
+                                    {isSaved ? <CheckCircle size={18} /> : null}
+                                    {isSaved ? 'Session Saved!' : 'Save Session'}
+                                </button>
+                            </div>
+                        </>
                     )}
                 </div>
             )}

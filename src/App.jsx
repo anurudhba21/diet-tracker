@@ -4,9 +4,9 @@ import { AnimatePresence } from 'framer-motion'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import Layout from './components/Layout'
-import DailyEntry from './components/DailyEntry'
+import MealPage from './components/MealPage'
 import History from './components/History'
-import AnalyticsDashboard from './components/analytics/AnalyticsDashboard'
+import ProgressPage from './components/analytics/ProgressPage'
 import LoginPage from './components/auth/LoginPage'
 import RegisterPage from './components/auth/RegisterPage'
 import OnboardingPage from './components/auth/OnboardingPage'
@@ -15,7 +15,7 @@ import TermsOfService from './components/legal/TermsOfService'
 import NavButton from './components/NavButton'
 import PageTransition from './components/PageTransition'
 import WorkoutPage from './components/workouts/WorkoutPage'
-import { Book, LayoutDashboard, PlusCircle, Dumbbell } from 'lucide-react'
+import { Soup, LayoutDashboard, Dumbbell } from 'lucide-react'
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -129,19 +129,19 @@ function AppContent() {
                             <Layout>
                                 <Routes location={location}>
                                     <Route path="/" element={
-                                        <PageTransition><DailyEntry /></PageTransition>
+                                        <PageTransition><MealPage /></PageTransition>
+                                    } />
+                                    <Route path="/meals" element={
+                                        <PageTransition><MealPage /></PageTransition>
                                     } />
                                     <Route path="/workouts" element={
                                         <PageTransition><WorkoutPage /></PageTransition>
                                     } />
-                                    <Route path="/history" element={
-                                        <PageTransition><History /></PageTransition>
-                                    } />
                                     <Route path="/entry/:dateStr" element={
-                                        <PageTransition><DailyEntry /></PageTransition>
+                                        <PageTransition><MealPage /></PageTransition>
                                     } />
                                     <Route path="/analytics" element={
-                                        <PageTransition><AnalyticsDashboard /></PageTransition>
+                                        <PageTransition><ProgressPage /></PageTransition>
                                     } />
                                     {/* Onboarding can be a focused modal or route if editing profile */}
                                     <Route path="/profile" element={
@@ -151,9 +151,8 @@ function AppContent() {
 
                                 {/* Navigation Bar */}
                                 <nav className="nav-island">
-                                    <NavButton icon={PlusCircle} label="Track" to="/" />
+                                    <NavButton icon={Soup} label="Meals" to="/" />
                                     <NavButton icon={Dumbbell} label="Workouts" to="/workouts" />
-                                    <NavButton icon={Book} label="History" to="/history" />
                                     <NavButton icon={LayoutDashboard} label="Progress" to="/analytics" />
                                 </nav>
                             </Layout>

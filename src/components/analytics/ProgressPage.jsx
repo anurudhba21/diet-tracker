@@ -18,6 +18,7 @@ import BMICard from './BMICard';
 import CalendarHeatmap from './CalendarHeatmap';
 import AchievementsCard from './AchievementsCard';
 import ExportButton from './ExportButton';
+import WorkoutStats from './WorkoutStats';
 import { TrendingUp, TrendingDown, PlusCircle, ArrowRight, Target, PieChart as PieChartIcon, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,7 +39,7 @@ const itemVariants = {
     show: { opacity: 1, y: 0 }
 };
 
-export default function AnalyticsDashboard() {
+export default function ProgressPage() {
     const { user, updateProfile } = useAuth();
     const [goal, setGoal] = useState(null);
     const [stats, setStats] = useState(null);
@@ -55,7 +56,7 @@ export default function AnalyticsDashboard() {
     const [heatmapEntries, setHeatmapEntries] = useState({});
     const [loading, setLoading] = useState(true);
     const [hasEntries, setHasEntries] = useState(false);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('meals');
     const navigate = useNavigate();
 
     // Load data
@@ -181,7 +182,10 @@ export default function AnalyticsDashboard() {
                     }}>
                         <TrendingUp size={40} />
                     </div>
-                    <h2 className="text-gradient" style={{ marginBottom: '8px', fontSize: '1.75rem' }}>Ready to Climb?</h2>
+                    <div>
+                        <h1 className="text-gradient" style={{ margin: 0, fontSize: '1.8rem' }}>Progress</h1>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Tracking your achievements</p>
+                    </div>
                     <p className="text-muted" style={{ marginBottom: '32px', maxWidth: '300px', marginLeft: 'auto', marginRight: 'auto' }}>
                         Your personal dashboard is waiting! Log your first weight entry to unlock charts, streaks, and metabolic tracking.
                     </p>
@@ -230,67 +234,28 @@ export default function AnalyticsDashboard() {
                 value={activeTab}
                 onChange={setActiveTab}
                 options={[
-                    { value: 'overview', label: 'Overview' },
-                    { value: 'trends', label: 'Trends' },
-                    { value: 'insights', label: 'Insights' },
-                    { value: 'journey', label: 'Journey' }
+                    { value: 'meals', label: 'Meals & Weight' },
+                    { value: 'workouts', label: 'Workouts' }
                 ]}
             />
 
             <AnimatePresence mode="wait">
-                {activeTab === 'overview' && (
+                {activeTab === 'meals' && (
                     <motion.div
-                        key="overview"
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 10 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <motion.div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                            <MetricCard label="Current" value={stats?.current} unit="kg" isPrimary />
-                            <MetricCard label="Today's Change" value={dailyProgressData[dailyProgressData.length - 1]?.loss || '--'} unit="kg" color={dailyProgressData[dailyProgressData.length - 1]?.loss > 0 ? 'var(--primary-500)' : 'var(--danger)'} />
-                        </motion.div>
-
-                        <motion.div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-                            <BMICard bmi={bmi} />
-                            <StreakCard streaks={streaks} />
-                        </motion.div>
-
-                        <div className="glass-panel" style={{ marginBottom: '24px' }}>
-                            <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <TrendingDown className="text-primary" size={20} /> Recent Trend
-                            </h3>
-                            <div style={{ height: '200px' }}>
-                                <WeightChart data={chartData.slice(-7)} target={goal.targetWeight} />
-                            </div>
-                        </div>
-
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="btn"
-                            onClick={() => navigate('/')}
-                            style={{ marginTop: 'auto' }}
-                        >
-                            <PlusCircle size={20} /> Log Today's Weight
-                        </motion.button>
-                    </motion.div>
-                )}
-
-                {activeTab === 'trends' && (
-                    <motion.div
-                        key="trends"
+                        key="meals"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 10 }}
                         transition={{ duration: 0.2 }}
                         style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
                     >
+                        {/* Summary Row */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <MetricCard label="Current" value={stats?.current} unit="kg" isPrimary />
                             <MetricCard label="Total Lost" value={stats?.lost} unit="kg" color="var(--primary-600)" />
-                            <MetricCard label="Remaining" value={stats?.remaining} unit="kg" color="var(--accent-gold)" />
                         </div>
 
+                        {/* Weight Trends */}
                         <div className="glass-panel">
                             <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <TrendingDown className="text-primary" size={24} /> Weight History
@@ -299,6 +264,13 @@ export default function AnalyticsDashboard() {
                                 <WeightChart data={chartData} target={goal.targetWeight} />
                             </div>
                         </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <BMICard bmi={bmi} />
+                            <GoalPieChart data={goalPieData} />
+                        </div>
+
+                        <PredictionCard prediction={prediction} />
 
                         <div className="glass-panel">
                             <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -309,54 +281,46 @@ export default function AnalyticsDashboard() {
                             </div>
                         </div>
 
-                        <div className="glass-panel">
-                            <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <Target className="text-primary" size={24} /> Goal Progress
-                            </h3>
-                            <div style={{ height: '300px' }}>
-                                <GoalPieChart data={goalPieData} />
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-
-                {activeTab === 'insights' && (
-                    <motion.div
-                        key="insights"
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
-                    >
-                        <PredictionCard prediction={prediction} />
-                        <ResilienceCard data={resilience} />
-
-
-
                         <HabitImpactCard impactData={habitImpact} />
                         <HabitStats stats={habitStats} />
 
-                        <div className="glass-panel" style={{ opacity: 0.5, textAlign: 'center', padding: '32px' }}>
-                            <p className="text-muted">More AI insights coming soon...</p>
+                        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                            <ExportButton />
                         </div>
                     </motion.div>
                 )}
 
-                {activeTab === 'journey' && (
+                {activeTab === 'workouts' && (
                     <motion.div
-                        key="journey"
+                        key="workouts"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 10 }}
                         transition={{ duration: 0.2 }}
                         style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
                     >
-                        <AchievementsCard stats={stats} streaks={streaks} />
-                        <CalendarHeatmap entries={heatmapEntries} />
+                        <WorkoutStats />
 
-                        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                            <ExportButton />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <StreakCard streaks={streaks} />
+                            <MetricCard label="Consistency" value={stats?.consistency || '0'} unit="%" color="var(--accent-gold)" />
+                        </div>
+
+                        <ResilienceCard data={resilience} />
+                        <CalendarHeatmap entries={heatmapEntries} />
+                        <AchievementsCard stats={stats} streaks={streaks} />
+
+                        {/* AI Advisor Modal/Button could go here if moving analysis */}
+                        <div className="glass-panel" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))', padding: '24px', textAlign: 'center' }}>
+                            <h3 style={{ margin: '0 0 8px 0' }}>AI Advisor</h3>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px' }}>Get a deep dive into your training data and habits.</p>
+                            <button
+                                onClick={() => navigate('/workouts')}
+                                className="btn-sm"
+                                style={{ background: 'var(--primary-500)', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '8px' }}
+                            >
+                                Open AI Coach
+                            </button>
                         </div>
                     </motion.div>
                 )}

@@ -9,7 +9,7 @@ import confetti from 'canvas-confetti';
 import { CheckCircle, Edit2, AlertTriangle } from 'lucide-react';
 import { analytics } from '../utils/analytics';
 
-export default function DailyEntry({ date }) {
+export default function MealPage({ date }) {
     const { dateStr } = useParams();
     const navigate = useNavigate();
 
@@ -122,9 +122,9 @@ export default function DailyEntry({ date }) {
                     }}>
                         <CheckCircle size={80} />
                     </div>
-                    <h2 className="text-gradient" style={{ marginBottom: '8px', fontSize: '2rem' }}>All Set!</h2>
+                    <h2 className="text-gradient" style={{ marginBottom: '8px', fontSize: '2rem' }}>Day Summary</h2>
                     <p style={{ marginBottom: '32px', color: 'var(--text-muted)' }}>
-                        You've tracked your progress for <br />
+                        Logged for <br />
                         <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{new Date(selectedDate).toDateString()}</span>
                     </p>
 
@@ -191,8 +191,8 @@ export default function DailyEntry({ date }) {
 
     return (
         <div style={{ paddingBottom: '100px' }}>
-            <div className="glass-panel" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>Tracking for:</span>
+            <div className="glass-panel" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.05), rgba(59, 130, 246, 0.05))' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '1.2rem' }}>Meals & Metrics</span>
                 <input
                     type="date"
                     value={selectedDate}
@@ -260,7 +260,7 @@ export default function DailyEntry({ date }) {
 
             {/* Core Metrics Section */}
             <div style={{ marginBottom: '24px' }}>
-                <h3 className="text-gradient" style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Daily Check</h3>
+                <h3 className="text-gradient" style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Nutrition Check</h3>
                 <div
                     onClick={() => updateEntry({ junk: !entry.junk })}
                     className="glass-panel"
