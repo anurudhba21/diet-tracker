@@ -265,9 +265,11 @@ export default function ProgressPage() {
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', minHeight: '180px' }}>
                             <BMICard bmi={bmi} />
-                            <GoalPieChart data={goalPieData} />
+                            <div className="glass-panel" style={{ padding: '10px' }}>
+                                <GoalPieChart data={goalPieData} />
+                            </div>
                         </div>
 
                         <PredictionCard prediction={prediction} />

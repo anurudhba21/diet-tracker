@@ -32,9 +32,9 @@ export default function GoalPieChart({ data }) {
                     <Pie
                         data={data}
                         cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
+                        cy="55%"
+                        innerRadius={45}
+                        outerRadius={65}
                         fill="#8884d8"
                         paddingAngle={5}
                         dataKey="value"
@@ -44,8 +44,13 @@ export default function GoalPieChart({ data }) {
                         ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
-                    <Legend verticalAlign="bottom" height={36} />
-                    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#f8fafc" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                    <Legend
+                        verticalAlign="bottom"
+                        align="center"
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}
+                    />
+                    <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" fill="#f8fafc" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
                         {data[0].value}%
                     </text>
                 </PieChart>
